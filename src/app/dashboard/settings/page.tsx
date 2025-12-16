@@ -9,7 +9,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useApiKeys } from '@/context/api-keys-context';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 
 export default function SettingsPage() {
   const { toast } = useToast();
@@ -20,11 +20,28 @@ export default function SettingsPage() {
     return key.length >= 10;
   }
 
+  const maskApiKey = (key: string) => {
+    if (key.length <= 8) {
+      return '****...****';
+    }
+    return `${key.substring(0, 4)}...${key.substring(key.length - 4)}`;
+  }
+
   const handleSaveKey = (serviceId: string, e: React.FormEvent) => {
     e.preventDefault();
     const form = e.target as HTMLFormElement;
     const input = form.elements.namedItem('apiKey') as HTMLInputElement;
     const key = input.value.trim();
+
+    // If key is empty and it's an update, we don't do anything
+    if (!key && apiKeys[serviceId]) {
+      toast({
+        variant: 'default',
+        title: 'No Change',
+        description: `API key for ${services.find((s) => s.id === serviceId)?.name} was not updated.`,
+      });
+      return;
+    }
 
     if (validateKey(key)) {
       setApiKey(serviceId, key);
@@ -128,6 +145,9 @@ export default function SettingsPage() {
                         <KeyRound className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                         <Input
                           name="apiKey"
+                          defaultValue={maskApiKey(apiKeys[service.id] || '')}
+                          onFocus={(e) => e.target.value = ''}
+                          onBlur={(e) => { if (!e.target.value) e.target.value = maskApiKey(apiKeys[service.id] || '')}}
                           placeholder="Enter new key to update"
                           type="password"
                           className="pl-10"
