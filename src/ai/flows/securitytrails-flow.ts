@@ -9,7 +9,7 @@ import { z } from 'zod';
 
 const SecurityTrailsInputSchema = z.object({
   resource: z.string().describe('The domain or IP address to query.'),
-  apiKeys: z.record(z-string()).optional().describe('The SecurityTrails API key.'),
+  apiKeys: z.record(z.string()).optional().describe('The SecurityTrails API key.'),
 });
 export type SecurityTrailsInput = z.infer<typeof SecurityTrailsInputSchema>;
 
