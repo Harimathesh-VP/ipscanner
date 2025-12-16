@@ -6,6 +6,7 @@ export type Service = {
   icon: LucideIcon;
   description: string;
   placeholder: string;
+  inputType: 'resource' | 'ipAddress' | 'query';
 };
 
 export type RequestLog = {

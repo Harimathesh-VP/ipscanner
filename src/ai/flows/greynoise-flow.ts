@@ -10,21 +10,22 @@ import { z } from 'genkit';
 
 const GreyNoiseInputSchema = z.object({
   ipAddress: z.string().describe('The IP address to query.'),
+  apiKey: z.string().optional().describe('The GreyNoise API key.'),
 });
 export type GreyNoiseInput = z.infer<typeof GreyNoiseInputSchema>;
 
 const GreyNoiseOutputSchema = z.any().describe('The JSON response from the GreyNoise API.');
 export type GreyNoiseOutput = z.infer<typeof GreyNoiseOutputSchema>;
 
-async function callApi(ipAddress: string) {
-  const apiKey = process.env.GREYNOISE_API_KEY;
-  if (!apiKey) {
-    throw new Error('GREYNOISE_API_KEY is not set.');
+async function callApi(ipAddress: string, apiKey?: string) {
+  const key = apiKey || process.env.GREYNOISE_API_KEY;
+  if (!key) {
+    throw new Error('GREYNOISE_API_KEY is not provided or configured.');
   }
   
   try {
     const response = await fetch(`https://api.greynoise.io/v3/community/${ipAddress}`, {
-      headers: { 'key': apiKey, 'Accept': 'application/json' },
+      headers: { 'key': key, 'Accept': 'application/json' },
     });
 
     if (!response.ok) {
@@ -48,7 +49,7 @@ const callGreyNoiseTool = ai.defineTool(
       inputSchema: GreyNoiseInputSchema,
       outputSchema: GreyNoiseOutputSchema,
     },
-    async (input) => await callApi(input.ipAddress)
+    async (input) => await callApi(input.ipAddress, input.apiKey)
 );
 
 const greyNoiseFlow = ai.defineFlow(

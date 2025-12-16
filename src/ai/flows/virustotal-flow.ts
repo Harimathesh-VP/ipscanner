@@ -10,16 +10,17 @@ import { z } from 'genkit';
 
 const VirusTotalInputSchema = z.object({
   resource: z.string().describe('The domain, IP address, or URL to query.'),
+  apiKey: z.string().optional().describe('The VirusTotal API key.'),
 });
 export type VirusTotalInput = z.infer<typeof VirusTotalInputSchema>;
 
 const VirusTotalOutputSchema = z.any().describe('The JSON response from the VirusTotal API.');
 export type VirusTotalOutput = z.infer<typeof VirusTotalOutputSchema>;
 
-async function callApi(resource: string) {
-  const apiKey = process.env.VIRUSTOTAL_API_KEY;
-  if (!apiKey) {
-    throw new Error('VIRUSTOTAL_API_KEY is not set.');
+async function callApi(resource: string, apiKey?: string) {
+  const key = apiKey || process.env.VIRUSTOTAL_API_KEY;
+  if (!key) {
+    throw new Error('VIRUSTOTAL_API_KEY is not provided or configured.');
   }
 
   let url;
@@ -43,7 +44,7 @@ async function callApi(resource: string) {
        resourceType = 'url';
     }
 
-    const mainResponse = await fetch(url, { headers: { 'x-apikey': apiKey } });
+    const mainResponse = await fetch(url, { headers: { 'x-apikey': key } });
     if (!mainResponse.ok) {
         throw new Error(`VirusTotal API error! status: ${mainResponse.status}`);
     }
@@ -51,10 +52,10 @@ async function callApi(resource: string) {
 
     // For IPs and domains, fetch related data like resolutions or subdomains
     if (resourceType === 'ip_address') {
-        const resolutionsResponse = await fetch(`${url}/resolutions`, { headers: { 'x-apikey': apiKey } });
+        const resolutionsResponse = await fetch(`${url}/resolutions`, { headers: { 'x-apikey': key } });
         if(resolutionsResponse.ok) mainData.data.attributes.resolutions = (await resolutionsResponse.json()).data;
     } else if (resourceType === 'domain') {
-        const subdomainsResponse = await fetch(`${url}/subdomains`, { headers: { 'x-apikey': apiKey } });
+        const subdomainsResponse = await fetch(`${url}/subdomains`, { headers: { 'x-apikey': key } });
         if(subdomainsResponse.ok) mainData.data.attributes.subdomains = (await subdomainsResponse.json()).data;
     }
 
@@ -73,7 +74,7 @@ const callVirusTotalTool = ai.defineTool(
       inputSchema: VirusTotalInputSchema,
       outputSchema: VirusTotalOutputSchema,
     },
-    async (input) => await callApi(input.resource)
+    async (input) => await callApi(input.resource, input.apiKey)
 );
 
 const virusTotalFlow = ai.defineFlow(

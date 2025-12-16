@@ -2,7 +2,7 @@
 
 /**
  * @fileOverview A Genkit flow for generating a consolidated threat intelligence report.
- * - generateReport - A function that takes an indicator and returns a summary and data from multiple sources.
+ * - generateReport - A function that takes an indicator and returns data from multiple sources.
  */
 
 import { ai } from '@/ai/genkit';
@@ -13,15 +13,17 @@ import { callSecurityTrails } from './securitytrails-flow';
 import { callGreyNoise } from './greynoise-flow';
 import { callShodan } from './shodan-flow';
 import { callAlienVault } from './alienvault-flow';
+import { services } from '@/lib/services';
 
 const ReportInputSchema = z.object({
   indicator: z.string().describe('The indicator (IP, domain, URL, or hash) to generate a report for.'),
-  services: z.array(z.string()).describe('A list of service IDs to use for the report.'),
+  selectedServices: z.array(z.string()).describe('A list of service IDs to use for the report.'),
+  apiKeys: z.record(z.string()).describe('A map of service IDs to their API keys.'),
 });
 export type ReportInput = z.infer<typeof ReportInputSchema>;
 
 const ReportOutputSchema = z.object({
-  summary: z.string().describe('A markdown-formatted summary of the threat intelligence findings.'),
+  summary: z.string().describe('A summary of the threat intelligence findings.'),
   rawData: z.any().describe('The raw JSON data from all the queried services.'),
   chartData: z.array(z.object({
       name: z.string(),
@@ -32,12 +34,12 @@ const ReportOutputSchema = z.object({
 export type ReportOutput = z.infer<typeof ReportOutputSchema>;
 
 const serviceFlows: Record<string, (input: any) => Promise<any>> = {
-  virustotal: (input: string) => callVirusTotal({ resource: input }),
-  abuseipdb: (input: string) => callAbuseIPDB({ ipAddress: input }),
-  securitytrails: (input: string) => callSecurityTrails({ resource: input }),
-  greynoise: (input: string) => callGreyNoise({ ipAddress: input }),
-  shodan: (input: string) => callShodan({ query: input }),
-  alienvault: (input: string) => callAlienVault({ resource: input }),
+  virustotal: (input: any) => callVirusTotal(input),
+  abuseipdb: (input: any) => callAbuseIPDB(input),
+  securitytrails: (input: any) => callSecurityTrails(input),
+  greynoise: (input: any) => callGreyNoise(input),
+  shodan: (input: any) => callShodan(input),
+  alienvault: (input: any) => callAlienVault(input),
 };
 
 const reportGenerationTool = ai.defineTool(
@@ -48,22 +50,32 @@ const reportGenerationTool = ai.defineTool(
       outputSchema: z.any(),
     },
     async (input) => {
-        const { indicator, services } = input;
-        const promises = services.map(serviceId => {
+        const { indicator, selectedServices, apiKeys } = input;
+        
+        const promises = selectedServices.map(serviceId => {
             const flow = serviceFlows[serviceId];
             if (flow) {
-                // Adjust input based on service expectations
-                let serviceInput = indicator;
-                if (serviceId === 'abuseipdb' || serviceId === 'greynoise') {
-                   // These services expect an ipAddress
-                   serviceInput = indicator;
-                } else if (serviceId === 'shodan') {
-                   serviceInput = indicator;
+                const service = services.find(s => s.id === serviceId);
+                if (!service) return Promise.resolve({ [serviceId]: { error: 'Unknown service' } });
+
+                const apiKey = apiKeys[serviceId];
+                if (!apiKey) {
+                    return Promise.resolve({ [serviceId]: { error: 'API key not configured for this service.' }});
+                }
+                
+                let serviceInput: any;
+
+                if (service.inputType === 'ipAddress') {
+                   serviceInput = { ipAddress: indicator, apiKey };
+                } else if (service.inputType === 'query') {
+                   serviceInput = { query: indicator, apiKey };
                 } else {
-                   serviceInput = indicator;
+                   serviceInput = { resource: indicator, apiKey };
                 }
 
-                return flow(serviceInput).then(result => ({ [serviceId]: result })).catch(e => ({ [serviceId]: {error: e.message}}));
+                return flow(serviceInput)
+                  .then(result => ({ [serviceId]: result }))
+                  .catch(e => ({ [serviceId]: {error: e.message}}));
             }
             return Promise.resolve({ [serviceId]: { error: 'Not implemented' } });
         });
@@ -82,39 +94,43 @@ const reportFlow = ai.defineFlow(
   },
   async (input) => {
     const rawData = await reportGenerationTool(input);
-
-    const prompt = `
-        You are a senior threat intelligence analyst. Based on the following data from various security services, 
-        generate a concise, markdown-formatted summary for the indicator: "${input.indicator}".
-
-        Your summary should include:
-        - A high-level assessment of the indicator's risk.
-        - Key findings from each service that returned data.
-        - Specific details like reputation scores, malicious detections, and important WHOIS or network context.
-        - Conclude with a recommendation for how to handle this indicator (e.g., block, monitor, allow).
-
-        Here is the raw data:
-        ${JSON.stringify(rawData, null, 2)}
-    `;
-
-    const { output: summary } = await ai.generate({
-        prompt: prompt,
-        model: 'googleai/gemini-2.5-flash',
-    });
     
+    // Create a simple summary based on which services returned data.
+    const successfulServices = Object.entries(rawData)
+      .filter(([_, result]) => result && !result.error)
+      .map(([serviceId, _]) => services.find(s => s.id === serviceId)?.name)
+      .filter(Boolean);
+
+    const failedServices = Object.entries(rawData)
+      .filter(([_, result]) => result && result.error)
+      .map(([serviceId, _]) => services.find(s => s.id === serviceId)?.name)
+      .filter(Boolean);
+
+    let summary = `Report for indicator: **${input.indicator}**\n\n`;
+    if (successfulServices.length > 0) {
+      summary += `Successfully retrieved data from: ${successfulServices.join(', ')}.\n\n`;
+    }
+    if (failedServices.length > 0) {
+       summary += `Failed to retrieve data from: ${failedServices.join(', ')}. Check API key configuration.\n\n`;
+    }
+    summary += "See the raw data section for full details.";
+
+
     let chartData = [];
-    if (rawData.virustotal && rawData.virustotal.data) {
+    if (rawData.virustotal && rawData.virustotal.data && rawData.virustotal.data.attributes) {
         const stats = rawData.virustotal.data.attributes.last_analysis_stats;
-        chartData.push({
-            name: "VT Analysis",
-            malicious: stats.malicious,
-            suspicious: stats.suspicious,
-        });
+        if(stats) {
+            chartData.push({
+                name: "VT Analysis",
+                malicious: stats.malicious || 0,
+                suspicious: stats.suspicious || 0,
+            });
+        }
     }
 
 
     return {
-      summary: summary!.text!,
+      summary,
       rawData,
       chartData,
     };

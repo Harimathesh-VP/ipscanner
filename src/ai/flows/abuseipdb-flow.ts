@@ -10,21 +10,22 @@ import { z } from 'genkit';
 
 const AbuseIPDBInputSchema = z.object({
   ipAddress: z.string().describe('The IP address to query.'),
+  apiKey: z.string().optional().describe('The AbuseIPDB API key.'),
 });
 export type AbuseIPDBInput = z.infer<typeof AbuseIPDBInputSchema>;
 
 const AbuseIPDBOutputSchema = z.any().describe('The JSON response from the AbuseIPDB API.');
 export type AbuseIPDBOutput = z.infer<typeof AbuseIPDBOutputSchema>;
 
-async function callApi(ipAddress: string) {
-  const apiKey = process.env.ABUSEIPDB_API_KEY;
-  if (!apiKey) {
-    throw new Error('ABUSEIPDB_API_KEY is not set.');
+async function callApi(ipAddress: string, apiKey?: string) {
+  const key = apiKey || process.env.ABUSEIPDB_API_KEY;
+  if (!key) {
+    throw new Error('AbuseIPDB API key is not provided or configured.');
   }
   
   try {
     const response = await fetch(`https://api.abuseipdb.com/api/v2/check?ipAddress=${ipAddress}&maxAgeInDays=90&verbose=true`, {
-      headers: { 'Key': apiKey, 'Accept': 'application/json' },
+      headers: { 'Key': key, 'Accept': 'application/json' },
     });
 
     if (!response.ok) {
@@ -45,7 +46,7 @@ const callAbuseIPDBTool = ai.defineTool(
       inputSchema: AbuseIPDBInputSchema,
       outputSchema: AbuseIPDBOutputSchema,
     },
-    async (input) => await callApi(input.ipAddress)
+    async (input) => await callApi(input.ipAddress, input.apiKey)
 );
 
 const abuseIPDBFlow = ai.defineFlow(

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useForm, Controller } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { BarChart, XAxis, YAxis, Bar, ResponsiveContainer } from 'recharts';
@@ -10,7 +10,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Textarea } from '@/components/ui/textarea';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -19,6 +18,7 @@ import { services } from '@/lib/services';
 import { generateReport } from '@/ai/flows/report-flow';
 import type { ReportOutput } from '@/ai/flows/report-flow';
 import ReactMarkdown from 'react-markdown';
+import { useApiKeys } from '@/context/api-keys-context';
 
 
 const formSchema = z.object({
@@ -30,6 +30,7 @@ export function ReportGenerator() {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<ReportOutput | null>(null);
   const { toast } = useToast();
+  const { apiKeys } = useApiKeys();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -43,7 +44,11 @@ export function ReportGenerator() {
     setLoading(true);
     setResult(null);
     try {
-      const report = await generateReport({ indicator: values.indicator, services: values.selectedServices });
+      const report = await generateReport({ 
+        indicator: values.indicator, 
+        selectedServices: values.selectedServices,
+        apiKeys: apiKeys 
+      });
       setResult(report);
     } catch (error: any) {
       toast({
@@ -149,7 +154,7 @@ export function ReportGenerator() {
         <Card>
           <CardHeader>
             <CardTitle>Generated Report</CardTitle>
-            <CardDescription>This is the AI-generated summary based on the selected services.</CardDescription>
+            <CardDescription>This is a data summary based on the selected services.</CardDescription>
           </CardHeader>
           <CardContent>
             {loading && (

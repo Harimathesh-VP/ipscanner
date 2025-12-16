@@ -10,16 +10,17 @@ import { z } from 'genkit';
 
 const AlienVaultInputSchema = z.object({
   resource: z.string().describe('The IP, domain, or hash to query.'),
+  apiKey: z.string().optional().describe('The AlienVault OTX API key.'),
 });
 export type AlienVaultInput = z.infer<typeof AlienVaultInputSchema>;
 
 const AlienVaultOutputSchema = z.any().describe('The JSON response from the AlienVault OTX API.');
 export type AlienVaultOutput = z.infer<typeof AlienVaultOutputSchema>;
 
-async function callApi(resource: string) {
-  const apiKey = process.env.ALIENVAULT_API_KEY;
-  if (!apiKey) {
-    throw new Error('ALIENVAULT_API_KEY is not set.');
+async function callApi(resource: string, apiKey?: string) {
+  const key = apiKey || process.env.ALIENVAULT_API_KEY;
+  if (!key) {
+    throw new Error('ALIENVAULT_API_KEY is not provided or configured.');
   }
 
   let resourceType;
@@ -41,7 +42,7 @@ async function callApi(resource: string) {
   try {
     const response = await fetch(endpoint, {
       headers: { 
-        'X-OTX-API-KEY': apiKey,
+        'X-OTX-API-KEY': key,
         'Accept': 'application/json' 
       },
     });
@@ -55,7 +56,7 @@ async function callApi(resource: string) {
     // Also fetch whois for domains
     if (resourceType === 'domain' && data.whois) {
         const whoisResponse = await fetch(data.whois, {
-            headers: { 'X-OTX-API-KEY': apiKey, 'Accept': 'application/json' }
+            headers: { 'X-OTX-API-KEY': key, 'Accept': 'application/json' }
         });
         if(whoisResponse.ok) {
             const whoisText = await whoisResponse.text();
@@ -78,7 +79,7 @@ const callAlienVaultTool = ai.defineTool(
       inputSchema: AlienVaultInputSchema,
       outputSchema: AlienVaultOutputSchema,
     },
-    async (input) => await callApi(input.resource)
+    async (input) => await callApi(input.resource, input.apiKey)
 );
 
 const alienVaultFlow = ai.defineFlow(

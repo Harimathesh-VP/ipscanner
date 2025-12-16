@@ -10,16 +10,17 @@ import { z } from 'genkit';
 
 const SecurityTrailsInputSchema = z.object({
   resource: z.string().describe('The domain or IP address to query.'),
+  apiKey: z.string().optional().describe('The SecurityTrails API key.'),
 });
 export type SecurityTrailsInput = z.infer<typeof SecurityTrailsInputSchema>;
 
 const SecurityTrailsOutputSchema = z.any().describe('The JSON response from the SecurityTrails API.');
 export type SecurityTrailsOutput = z.infer<typeof SecurityTrailsOutputSchema>;
 
-async function callApi(resource: string) {
-  const apiKey = process.env.SECURITYTRAILS_API_KEY;
-  if (!apiKey) {
-    throw new Error('SECURITYTRAILS_API_KEY is not set.');
+async function callApi(resource: string, apiKey?: string) {
+  const key = apiKey || process.env.SECURITYTRAILS_API_KEY;
+  if (!key) {
+    throw new Error('SECURITYTRAILS_API_KEY is not provided or configured.');
   }
 
   let endpoint;
@@ -35,7 +36,7 @@ async function callApi(resource: string) {
   try {
     const response = await fetch(endpoint, {
       headers: { 
-        'APIKEY': apiKey,
+        'APIKEY': key,
         'Accept': 'application/json' 
       },
     });
@@ -49,7 +50,7 @@ async function callApi(resource: string) {
     if (endpoint.includes('/domain/')) {
         const whoisResponse = await fetch(`${endpoint}/whois`, {
              headers: { 
-                'APIKEY': apiKey,
+                'APIKEY': key,
                 'Accept': 'application/json' 
             },
         });
@@ -72,7 +73,7 @@ const callSecurityTrailsTool = ai.defineTool(
       inputSchema: SecurityTrailsInputSchema,
       outputSchema: SecurityTrailsOutputSchema,
     },
-    async (input) => await callApi(input.resource)
+    async (input) => await callApi(input.resource, input.apiKey)
 );
 
 const securityTrailsFlow = ai.defineFlow(

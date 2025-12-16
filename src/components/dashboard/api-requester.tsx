@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Search } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useApiKeys } from '@/context/api-keys-context';
 import { callVirusTotal } from '@/ai/flows/virustotal-flow';
 import { callAbuseIPDB } from '@/ai/flows/abuseipdb-flow';
 import { callSecurityTrails } from '@/ai/flows/securitytrails-flow';
@@ -16,20 +17,20 @@ import { callShodan } from '@/ai/flows/shodan-flow';
 import { callAlienVault } from '@/ai/flows/alienvault-flow';
 
 const serviceFlows: Record<string, (input: any) => Promise<any>> = {
-  virustotal: (input: string) => callVirusTotal({ resource: input }),
-  abuseipdb: (input: string) => callAbuseIPDB({ ipAddress: input }),
-  securitytrails: (input: string) => callSecurityTrails({ resource: input }),
-  greynoise: (input: string) => callGreyNoise({ ipAddress: input }),
-  shodan: (input: string) => callShodan({ query: input }),
-  alienvault: (input: string) => callAlienVault({ resource: input }),
+  virustotal: (input: any) => callVirusTotal(input),
+  abuseipdb: (input: any) => callAbuseIPDB(input),
+  securitytrails: (input: any) => callSecurityTrails(input),
+  greynoise: (input: any) => callGreyNoise(input),
+  shodan: (input: any) => callShodan(input),
+  alienvault: (input: any) => callAlienVault(input),
 };
-
 
 export function ApiRequester() {
   const [inputValues, setInputValues] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState<Record<string, boolean>>({});
   const [results, setResults] = useState<Record<string, any>>({});
   const { toast } = useToast();
+  const { apiKeys } = useApiKeys();
 
   const handleInputChange = (serviceId: string, value: string) => {
     setInputValues((prev) => ({ ...prev, [serviceId]: value }));
@@ -55,12 +56,33 @@ export function ApiRequester() {
       });
       return;
     }
+    
+    const apiKey = apiKeys[serviceId];
+    if (!apiKey) {
+      toast({
+        variant: 'destructive',
+        title: 'API Key Required',
+        description: `Please configure the API key for ${services.find(s => s.id === serviceId)?.name} in settings.`,
+      });
+      return;
+    }
+
 
     setLoading((prev) => ({ ...prev, [serviceId]: true }));
     setResults((prev) => ({ ...prev, [serviceId]: null }));
 
     try {
-      const result = await flow(inputValue);
+      const service = services.find(s => s.id === serviceId);
+      let serviceInput;
+      if (service?.inputType === 'ipAddress') {
+        serviceInput = { ipAddress: inputValue, apiKey };
+      } else if (service?.inputType === 'query') {
+        serviceInput = { query: inputValue, apiKey };
+      } else {
+        serviceInput = { resource: inputValue, apiKey };
+      }
+
+      const result = await flow(serviceInput);
       setResults((prev) => ({
         ...prev,
         [serviceId]: result,
