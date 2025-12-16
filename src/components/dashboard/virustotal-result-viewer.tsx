@@ -20,10 +20,13 @@ import {
   Eye,
   Globe,
   Milestone,
+  CalendarClock,
+  Pencil,
 } from 'lucide-react';
 import { Button } from '../ui/button';
 import { useToast } from '@/hooks/use-toast';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../ui/table';
+import { format } from 'date-fns';
+
 
 type AnalysisResult = {
   category: string;
@@ -60,6 +63,8 @@ type VirusTotalResult = {
       network?: string;
       country?: string;
       continent?: string;
+      last_analysis_date?: number;
+      last_modification_date?: number;
       last_analysis_results?: Record<string, AnalysisResult>;
       last_analysis_stats?: AnalysisStats;
       whois?: WhoisData;
@@ -124,7 +129,7 @@ export function VirusTotalResultViewer({ result }: VirusTotalResultViewerProps) 
      )
   };
 
-  const hasNetworkInfo = !!(type === 'ip_address' && attributes?.asn);
+  const hasNetworkInfo = !!(attributes?.asn || attributes?.last_analysis_date || attributes?.last_modification_date);
   const hasWhois = attributes?.whois && (typeof attributes.whois === 'string' || Object.keys(attributes.whois).length > 0);
   
   const whoisContent = useMemo(() => {
@@ -144,7 +149,7 @@ export function VirusTotalResultViewer({ result }: VirusTotalResultViewerProps) 
       <div className="flex items-center justify-between">
         <TabsList className="grid grid-cols-3 w-auto">
           <TabsTrigger value="vendors"><ShieldCheck className="mr-2" /> Security Vendors</TabsTrigger>
-          <TabsTrigger value="network" disabled={!hasNetworkInfo}><Network className="mr-2" /> Network Info</TabsTrigger>
+          <TabsTrigger value="network" disabled={!hasNetworkInfo}><Network className="mr-2" /> Details</TabsTrigger>
           <TabsTrigger value="whois" disabled={!hasWhois}><BookCopy className="mr-2" /> WHOIS</TabsTrigger>
         </TabsList>
       </div>
@@ -211,43 +216,59 @@ export function VirusTotalResultViewer({ result }: VirusTotalResultViewerProps) 
         
       </TabsContent>
        <TabsContent value="network" className="pt-4 space-y-4">
-        {type === 'ip_address' && attributes?.asn && (
+        {hasNetworkInfo ? (
             <Card>
                 <CardHeader>
-                    <CardTitle>ASN & Network</CardTitle>
-                    <CardDescription>Autonomous System and network block information for this IP.</CardDescription>
+                    <CardTitle>Details</CardTitle>
+                    <CardDescription>Network, location, and analysis date information.</CardDescription>
                 </CardHeader>
                 <CardContent className="grid md:grid-cols-2 gap-x-8 gap-y-4">
-                     <div className="flex items-center gap-3">
+                     {attributes?.asn && <div className="flex items-center gap-3">
                         <Milestone className="h-5 w-5 text-muted-foreground" />
                         <div>
                             <p className="text-xs text-muted-foreground">ASN</p>
                             <p className="font-medium">{attributes.asn}</p>
                         </div>
-                     </div>
-                     <div className="flex items-center gap-3">
+                     </div>}
+                     {attributes?.network && <div className="flex items-center gap-3">
                         <Network className="h-5 w-5 text-muted-foreground" />
                         <div>
                             <p className="text-xs text-muted-foreground">CIDR / Range</p>
                             <p className="font-medium font-code">{attributes.network}</p>
                         </div>
-                     </div>
-                     <div className="flex items-center gap-3">
+                     </div>}
+                     {attributes?.as_owner && <div className="flex items-center gap-3">
                         <ShieldCheck className="h-5 w-5 text-muted-foreground" />
                         <div>
                             <p className="text-xs text-muted-foreground">Owner</p>
                             <p className="font-medium">{attributes.as_owner}</p>
                         </div>
-                     </div>
-                     <div className="flex items-center gap-3">
+                     </div>}
+                     {attributes?.country && <div className="flex items-center gap-3">
                         <Globe className="h-5 w-5 text-muted-foreground" />
                         <div>
                             <p className="text-xs text-muted-foreground">Location</p>
                             <p className="font-medium">{attributes.country} ({attributes.continent})</p>
                         </div>
-                     </div>
+                     </div>}
+                     {attributes?.last_analysis_date && <div className="flex items-center gap-3">
+                        <CalendarClock className="h-5 w-5 text-muted-foreground" />
+                        <div>
+                            <p className="text-xs text-muted-foreground">Last Analysis</p>
+                            <p className="font-medium">{format(new Date(attributes.last_analysis_date * 1000), 'PPpp')}</p>
+                        </div>
+                     </div>}
+                      {attributes?.last_modification_date && <div className="flex items-center gap-3">
+                        <Pencil className="h-5 w-5 text-muted-foreground" />
+                        <div>
+                            <p className="text-xs text-muted-foreground">Last Modification</p>
+                            <p className="font-medium">{format(new Date(attributes.last_modification_date * 1000), 'PPpp')}</p>
+                        </div>
+                     </div>}
                 </CardContent>
             </Card>
+        ): (
+            <p className="text-muted-foreground text-center py-4">No detailed information available.</p>
         )}
       </TabsContent>
       <TabsContent value="whois" className="pt-4">

@@ -143,7 +143,7 @@ export function ApiRequester() {
                     </CardTitle>
                     {results[service.id] && (
                          <Button variant="outline" size="sm" onClick={() => handleCopyJson(results[service.id])}>
-                            {service.id === 'virustotal' ? <Eye className="mr-2 h-4 w-4" /> : <Copy className="mr-2 h-4 w-4" />}
+                            <Copy className="mr-2 h-4 w-4" />
                             Copy JSON
                         </Button>
                     )}
