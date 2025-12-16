@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Copy, Search } from 'lucide-react';
+import { Copy, Search, Eye } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useApiKeys } from '@/context/api-keys-context';
 import { callVirusTotal } from '@/ai/flows/virustotal-flow';
@@ -32,7 +32,7 @@ export function ApiRequester() {
   const [loading, setLoading] = useState<Record<string, boolean>>({});
   const [results, setResults] = useState<Record<string, any>>({});
   const { toast } = useToast();
-  const { apiKeys } = useApiKeys();
+  const { apiKeys, incrementLookupCount } = useApiKeys();
 
   const handleInputChange = (serviceId: string, value: string) => {
     setInputValues((prev) => ({ ...prev, [serviceId]: value }));
@@ -80,6 +80,7 @@ export function ApiRequester() {
 
     setLoading((prev) => ({ ...prev, [serviceId]: true }));
     setResults((prev) => ({ ...prev, [serviceId]: null }));
+    incrementLookupCount();
 
     try {
       const service = services.find(s => s.id === serviceId);

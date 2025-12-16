@@ -1,4 +1,6 @@
 import { ApiRequester } from '@/components/dashboard/api-requester';
+import { DashboardStats } from '@/components/dashboard/dashboard-stats';
+import { Separator } from '@/components/ui/separator';
 
 export default function DashboardPage() {
   return (
@@ -9,6 +11,8 @@ export default function DashboardPage() {
           Query various threat intelligence services in real-time.
         </p>
       </div>
+      <DashboardStats />
+      <Separator />
       <ApiRequester />
     </div>
   );
