@@ -62,7 +62,6 @@ type VirusTotalResult = {
       continent?: string;
       last_analysis_results?: Record<string, AnalysisResult>;
       last_analysis_stats?: AnalysisStats;
-      subdomains?: NetworkInfo[];
       whois?: WhoisData;
     };
     type?: 'ip_address' | 'domain' | 'url';
@@ -125,8 +124,7 @@ export function VirusTotalResultViewer({ result }: VirusTotalResultViewerProps) 
      )
   };
 
-  const networkInfo = type === 'domain' ? attributes?.subdomains : undefined;
-  const hasNetworkInfo = !!(networkInfo && networkInfo.length > 0) || (type === 'ip_address' && attributes?.asn);
+  const hasNetworkInfo = !!(type === 'ip_address' && attributes?.asn);
   const hasWhois = attributes?.whois && (typeof attributes.whois === 'string' || Object.keys(attributes.whois).length > 0);
   
   const whoisContent = useMemo(() => {
@@ -134,7 +132,10 @@ export function VirusTotalResultViewer({ result }: VirusTotalResultViewerProps) 
     if (typeof attributes.whois === 'string') {
         return attributes.whois;
     }
-    return JSON.stringify(attributes.whois, null, 2);
+    // Pretty print object
+    return Object.entries(attributes.whois)
+      .map(([key, value]) => `${key.padEnd(20)}: ${value}`)
+      .join('\n');
   }, [attributes?.whois, hasWhois]);
 
 
@@ -146,10 +147,6 @@ export function VirusTotalResultViewer({ result }: VirusTotalResultViewerProps) 
           <TabsTrigger value="network" disabled={!hasNetworkInfo}><Network className="mr-2" /> Network Info</TabsTrigger>
           <TabsTrigger value="whois" disabled={!hasWhois}><BookCopy className="mr-2" /> WHOIS</TabsTrigger>
         </TabsList>
-         <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleCopyJson(result)}>
-            <Eye className="h-4 w-4" />
-            <span className="sr-only">Copy Raw JSON</span>
-         </Button>
       </div>
 
       <TabsContent value="vendors" className="space-y-4 pt-4">
@@ -249,37 +246,6 @@ export function VirusTotalResultViewer({ result }: VirusTotalResultViewerProps) 
                             <p className="font-medium">{attributes.country} ({attributes.continent})</p>
                         </div>
                      </div>
-                </CardContent>
-            </Card>
-        )}
-
-        {networkInfo && networkInfo.length > 0 && (
-            <Card>
-                <CardHeader>
-                    <CardTitle>Subdomains</CardTitle>
-                    <CardDescription>
-                        Subdomains discovered for this domain.
-                    </CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <Table>
-                        <TableHeader>
-                            <TableRow>
-                                <TableHead>Subdomain</TableHead>
-                                <TableHead className="text-right">Last Resolved</TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {networkInfo?.map((item) => (
-                                <TableRow key={item.id}>
-                                    <TableCell className="font-mono text-xs">{item.attributes.host_name || item.id}</TableCell>
-                                    <TableCell className="text-right text-muted-foreground text-xs">
-                                        {item.attributes.last_resolved ? new Date(item.attributes.last_resolved * 1000).toLocaleDateString() : 'N/A'}
-                                    </TableCell>
-                                </TableRow>
-                            ))}
-                        </TableBody>
-                    </Table>
                 </CardContent>
             </Card>
         )}

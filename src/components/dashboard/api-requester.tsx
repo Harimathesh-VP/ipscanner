@@ -141,9 +141,9 @@ export function ApiRequester() {
                         <service.icon className="h-6 w-6 text-muted-foreground" />
                         {service.name}
                     </CardTitle>
-                    {results[service.id] && service.id !== 'virustotal' && (
-                        <Button variant="outline" size="sm" onClick={() => handleCopyJson(results[service.id])}>
-                            <Copy className="mr-2 h-4 w-4" />
+                    {results[service.id] && (
+                         <Button variant="outline" size="sm" onClick={() => handleCopyJson(results[service.id])}>
+                            {service.id === 'virustotal' ? <Eye className="mr-2 h-4 w-4" /> : <Copy className="mr-2 h-4 w-4" />}
                             Copy JSON
                         </Button>
                     )}
