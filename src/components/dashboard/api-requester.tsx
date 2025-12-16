@@ -2,34 +2,86 @@
 
 import { useState } from 'react';
 import { services } from '@/lib/services';
-import { mockApiResponses } from '@/lib/mock-data';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Search } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
+import { callVirusTotal } from '@/ai/flows/virustotal-flow';
+import { callAbuseIPDB } from '@/ai/flows/abuseipdb-flow';
+
+const serviceFlows: Record<string, (input: any) => Promise<any>> = {
+  virustotal: (input: string) => callVirusTotal({ resource: input }),
+  abuseipdb: (input: string) => callAbuseIPDB({ ipAddress: input }),
+  // Add other service flows here
+};
+
 
 export function ApiRequester() {
   const [inputValues, setInputValues] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState<Record<string, boolean>>({});
   const [results, setResults] = useState<Record<string, any>>({});
+  const { toast } = useToast();
 
   const handleInputChange = (serviceId: string, value: string) => {
     setInputValues((prev) => ({ ...prev, [serviceId]: value }));
   };
 
-  const handleSubmit = (serviceId: string) => {
+  const handleSubmit = async (serviceId: string) => {
+    const inputValue = inputValues[serviceId];
+    if (!inputValue) {
+      toast({
+        variant: 'destructive',
+        title: 'Input Required',
+        description: 'Please enter a value to search.',
+      });
+      return;
+    }
+
+    const flow = serviceFlows[serviceId];
+    if (!flow) {
+      toast({
+        variant: 'destructive',
+        title: 'Service Not Implemented',
+        description: `The service "${serviceId}" is not connected to a live API yet.`,
+      });
+      // Mock response for unimplemented services
+      setLoading((prev) => ({ ...prev, [serviceId]: true }));
+      setTimeout(() => {
+        setResults((prev) => ({
+          ...prev,
+          [serviceId]: { message: 'This service is not yet implemented for live data.' },
+        }));
+        setLoading((prev) => ({ ...prev, [serviceId]: false }));
+      }, 500);
+      return;
+    }
+
     setLoading((prev) => ({ ...prev, [serviceId]: true }));
     setResults((prev) => ({ ...prev, [serviceId]: null }));
 
-    setTimeout(() => {
+    try {
+      const result = await flow(inputValue);
       setResults((prev) => ({
         ...prev,
-        [serviceId]: mockApiResponses[serviceId] || { error: 'No mock data available' },
+        [serviceId]: result,
       }));
+    } catch (error: any) {
+      console.error(`Error fetching from ${serviceId}:`, error);
+      toast({
+        variant: 'destructive',
+        title: 'API Error',
+        description: error.message || `Could not fetch data from ${services.find(s => s.id === serviceId)?.name}.`,
+      });
+      setResults((prev) => ({
+        ...prev,
+        [serviceId]: { error: error.message },
+      }));
+    } finally {
       setLoading((prev) => ({ ...prev, [serviceId]: false }));
-    }, 1500);
+    }
   };
 
   return (
