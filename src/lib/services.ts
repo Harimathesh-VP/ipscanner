@@ -1,5 +1,5 @@
 import type { FC, SVGProps } from 'react';
-import { VirusTotalLogo, AbuseIPDBLogo, SecurityTrailsLogo, GreyNoiseLogo, ShodanLogo, AlienVaultLogo, IPQualityScoreLogo } from '@/components/logos';
+import { VirusTotalLogo, AbuseIPDBLogo, SecurityTrailsLogo, GreyNoiseLogo, ShodanLogo, AlienVaultLogo, IPQualityScoreLogo, CiscoTalosLogo, IBMXForceLogo } from '@/components/logos';
 import type { Service } from './types';
 
 export const services: Service[] = [
@@ -72,5 +72,25 @@ export const services: Service[] = [
     placeholder: 'Enter an IPQS resource (IP address)',
     inputType: 'ipAddress',
     documentationUrl: 'https://www.ipqualityscore.com/documentation/overview',
+  },
+  {
+    id: 'ciscotalos',
+    name: 'Cisco Talos',
+    alias: 'Talos',
+    icon: CiscoTalosLogo,
+    description: 'Comprehensive threat intelligence from Cisco Talos. IP and domain reputation.',
+    placeholder: 'Enter a Talos resource (IP, domain)',
+    inputType: 'resource',
+    documentationUrl: 'https://talosintelligence.com/reputation_center/lookup',
+  },
+  {
+    id: 'xforce',
+    name: 'IBM X-Force',
+    alias: 'X-Force',
+    icon: IBMXForceLogo,
+    description: 'Threat intelligence on IPs, URLs, and vulnerabilities from IBM X-Force Exchange.',
+    placeholder: 'Enter an X-Force resource (IP, URL, hash)',
+    inputType: 'resource',
+    documentationUrl: 'https://api.xforce.ibmcloud.com/docs/',
   },
 ];

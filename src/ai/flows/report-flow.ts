@@ -13,6 +13,8 @@ import { callGreyNoise } from './greynoise-flow';
 import { callShodan } from './shodan-flow';
 import { callAlienVault } from './alienvault-flow';
 import { callIPQualityScore } from './ipqualityscore-flow';
+import { callCiscoTalos } from './ciscotalos-flow';
+import { callIBMForce } from './ibm-xforce-flow';
 import { services } from '@/lib/services';
 
 const ReportInputSchema = z.object({
@@ -41,6 +43,8 @@ const serviceFlows: Record<string, (input: any) => Promise<any>> = {
   shodan: callShodan,
   alienvault: callAlienVault,
   ipqualityscore: callIPQualityScore,
+  ciscotalos: callCiscoTalos,
+  xforce: callIBMForce,
 };
 
 async function getReportData(input: ReportInput) {

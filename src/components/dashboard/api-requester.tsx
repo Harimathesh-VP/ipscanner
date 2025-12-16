@@ -16,6 +16,8 @@ import { callGreyNoise } from '@/ai/flows/greynoise-flow';
 import { callShodan } from '@/ai/flows/shodan-flow';
 import { callAlienVault } from '@/ai/flows/alienvault-flow';
 import { callIPQualityScore } from '@/ai/flows/ipqualityscore-flow';
+import { callCiscoTalos } from '@/ai/flows/ciscotalos-flow';
+import { callIBMForce } from '@/ai/flows/ibm-xforce-flow';
 import { VirusTotalResultViewer } from './virustotal-result-viewer';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
@@ -28,6 +30,8 @@ const serviceFlows: Record<string, (input: any) => Promise<any>> = {
   shodan: callShodan,
   alienvault: callAlienVault,
   ipqualityscore: callIPQualityScore,
+  ciscotalos: callCiscoTalos,
+  xforce: callIBMForce,
 };
 
 export function ApiRequester() {
@@ -119,7 +123,7 @@ export function ApiRequester() {
 
   return (
     <Tabs defaultValue={services[0].id} className="w-full">
-      <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 lg:grid-cols-7">
+      <TabsList className="grid w-full grid-cols-3 md:grid-cols-5 lg:grid-cols-9">
         {services.map((service) => (
           <TabsTrigger key={service.id} value={service.id} className="flex-col h-14 gap-1">
              <service.icon className="h-6 w-6" />
