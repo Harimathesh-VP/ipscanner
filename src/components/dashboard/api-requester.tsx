@@ -15,6 +15,8 @@ import { callSecurityTrails } from '@/ai/flows/securitytrails-flow';
 import { callGreyNoise } from '@/ai/flows/greynoise-flow';
 import { callShodan } from '@/ai/flows/shodan-flow';
 import { callAlienVault } from '@/ai/flows/alienvault-flow';
+import { VirusTotalResultViewer } from './virustotal-result-viewer';
+
 
 const serviceFlows: Record<string, (input: any) => Promise<any>> = {
   virustotal: callVirusTotal,
@@ -155,20 +157,26 @@ export function ApiRequester() {
                 </div>
               )}
               {results[service.id] && (
-                <Card className="bg-muted/50 mt-4">
-                   <CardHeader className="flex-row items-center justify-between py-3 px-4 border-b">
-                     <CardTitle className="text-base font-medium">Raw JSON</CardTitle>
-                     <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleCopyJson(results[service.id])}>
-                        <Copy className="h-4 w-4" />
-                        <span className="sr-only">Copy JSON</span>
-                     </Button>
-                   </CardHeader>
-                  <CardContent className="p-0">
-                    <pre className="text-sm font-code overflow-x-auto p-4">
-                      {JSON.stringify(results[service.id], null, 2)}
-                    </pre>
-                  </CardContent>
-                </Card>
+                <>
+                 {service.id === 'virustotal' && results[service.id]?.data?.attributes?.last_analysis_results ? (
+                    <VirusTotalResultViewer result={results[service.id]} />
+                  ) : (
+                    <Card className="bg-muted/50 mt-4">
+                      <CardHeader className="flex-row items-center justify-between py-3 px-4 border-b">
+                        <CardTitle className="text-base font-medium">Raw JSON</CardTitle>
+                        <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleCopyJson(results[service.id])}>
+                            <Copy className="h-4 w-4" />
+                            <span className="sr-only">Copy JSON</span>
+                        </Button>
+                      </CardHeader>
+                      <CardContent className="p-0">
+                        <pre className="text-sm font-code overflow-x-auto p-4">
+                          {JSON.stringify(results[service.id], null, 2)}
+                        </pre>
+                      </CardContent>
+                    </Card>
+                  )}
+                </>
               )}
             </div>
           </CardContent>
