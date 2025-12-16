@@ -120,12 +120,14 @@ export default function HomePage() {
             </div>
             <div className="mx-auto mt-12 grid max-w-5xl grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:gap-6">
               {services.map((service) => (
-                <Card key={service.id} className="h-full">
-                  <CardContent className="flex flex-col items-center justify-center p-4 sm:p-6 h-full">
-                    <service.icon className="h-12 w-12" />
-                    <span className="mt-3 text-sm font-medium text-center">{service.name}</span>
-                  </CardContent>
-                </Card>
+                <a key={service.id} href={service.documentationUrl} target="_blank" rel="noopener noreferrer" className="h-full block hover:scale-105 transition-transform duration-200">
+                  <Card className="h-full">
+                    <CardContent className="flex flex-col items-center justify-center p-4 sm:p-6 h-full">
+                      <service.icon className="h-12 w-12" />
+                      <span className="mt-3 text-sm font-medium text-center">{service.name}</span>
+                    </CardContent>
+                  </Card>
+                </a>
               ))}
             </div>
              <div className="flex justify-center text-xs text-muted-foreground mt-6">
