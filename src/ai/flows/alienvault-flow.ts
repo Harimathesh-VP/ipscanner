@@ -5,7 +5,6 @@
  * - callAlienVault - A function that takes a resource (IP, domain, hash) and returns OTX data.
  */
 
-import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
 
 const AlienVaultInputSchema = z.object({
@@ -14,10 +13,10 @@ const AlienVaultInputSchema = z.object({
 });
 export type AlienVaultInput = z.infer<typeof AlienVaultInputSchema>;
 
-const AlienVaultOutputSchema = z.any().describe('The JSON response from the AlienVault OTX API.');
-export type AlienVaultOutput = z.infer<typeof AlienVaultOutputSchema>;
+export type AlienVaultOutput = any;
 
-async function callApi(resource: string, apiKey?: string) {
+export async function callAlienVault(input: AlienVaultInput): Promise<AlienVaultOutput> {
+  const { resource, apiKey } = input;
   const key = apiKey || process.env.ALIENVAULT_API_KEY;
   if (!key) {
     throw new Error('ALIENVAULT_API_KEY is not provided or configured.');
@@ -70,30 +69,4 @@ async function callApi(resource: string, apiKey?: string) {
     console.error('Error calling AlienVault OTX API:', err.message);
     throw new Error('Failed to fetch data from AlienVault OTX.');
   }
-}
-
-const callAlienVaultTool = ai.defineTool(
-    {
-      name: 'callAlienVault',
-      description: 'Calls the AlienVault OTX API to get information about a resource.',
-      inputSchema: AlienVaultInputSchema,
-      outputSchema: AlienVaultOutputSchema,
-    },
-    async (input) => await callApi(input.resource, input.apiKey)
-);
-
-const alienVaultFlow = ai.defineFlow(
-  {
-    name: 'alienVaultFlow',
-    inputSchema: AlienVaultInputSchema,
-    outputSchema: AlienVaultOutputSchema,
-  },
-  async (input) => {
-    const { output } = await callAlienVaultTool(input);
-    return output;
-  }
-);
-
-export async function callAlienVault(input: AlienVaultInput): Promise<AlienVaultOutput> {
-  return await alienVaultFlow(input);
 }

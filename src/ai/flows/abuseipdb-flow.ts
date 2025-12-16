@@ -5,7 +5,6 @@
  * - callAbuseIPDB - A function that takes an IP address and returns AbuseIPDB analysis.
  */
 
-import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
 
 const AbuseIPDBInputSchema = z.object({
@@ -14,10 +13,10 @@ const AbuseIPDBInputSchema = z.object({
 });
 export type AbuseIPDBInput = z.infer<typeof AbuseIPDBInputSchema>;
 
-const AbuseIPDBOutputSchema = z.any().describe('The JSON response from the AbuseIPDB API.');
-export type AbuseIPDBOutput = z.infer<typeof AbuseIPDBOutputSchema>;
+export type AbuseIPDBOutput = any;
 
-async function callApi(ipAddress: string, apiKey?: string) {
+export async function callAbuseIPDB(input: AbuseIPDBInput): Promise<AbuseIPDBOutput> {
+  const { ipAddress, apiKey } = input;
   const key = apiKey || process.env.ABUSEIPDB_API_KEY;
   if (!key) {
     throw new Error('AbuseIPDB API key is not provided or configured.');
@@ -37,30 +36,4 @@ async function callApi(ipAddress: string, apiKey?: string) {
     console.error('Error calling AbuseIPDB API:', err.message);
     throw new Error('Failed to fetch data from AbuseIPDB.');
   }
-}
-
-const callAbuseIPDBTool = ai.defineTool(
-    {
-      name: 'callAbuseIPDB',
-      description: 'Calls the AbuseIPDB API to get information about an IP address.',
-      inputSchema: AbuseIPDBInputSchema,
-      outputSchema: AbuseIPDBOutputSchema,
-    },
-    async (input) => await callApi(input.ipAddress, input.apiKey)
-);
-
-const abuseIPDBFlow = ai.defineFlow(
-  {
-    name: 'abuseIPDBFlow',
-    inputSchema: AbuseIPDBInputSchema,
-    outputSchema: AbuseIPDBOutputSchema,
-  },
-  async (input) => {
-    const { output } = await callAbuseIPDBTool(input);
-    return output;
-  }
-);
-
-export async function callAbuseIPDB(input: AbuseIPDBInput): Promise<AbuseIPDBOutput> {
-  return await abuseIPDBFlow(input);
 }

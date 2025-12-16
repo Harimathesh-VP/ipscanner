@@ -5,7 +5,6 @@
  * - callSecurityTrails - A function that takes a resource (domain or IP) and returns SecurityTrails data.
  */
 
-import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
 
 const SecurityTrailsInputSchema = z.object({
@@ -14,10 +13,10 @@ const SecurityTrailsInputSchema = z.object({
 });
 export type SecurityTrailsInput = z.infer<typeof SecurityTrailsInputSchema>;
 
-const SecurityTrailsOutputSchema = z.any().describe('The JSON response from the SecurityTrails API.');
-export type SecurityTrailsOutput = z.infer<typeof SecurityTrailsOutputSchema>;
+export type SecurityTrailsOutput = any;
 
-async function callApi(resource: string, apiKey?: string) {
+export async function callSecurityTrails(input: SecurityTrailsInput): Promise<SecurityTrailsOutput> {
+  const { resource, apiKey } = input;
   const key = apiKey || process.env.SECURITYTRAILS_API_KEY;
   if (!key) {
     throw new Error('SECURITYTRAILS_API_KEY is not provided or configured.');
@@ -64,30 +63,4 @@ async function callApi(resource: string, apiKey?: string) {
     console.error('Error calling SecurityTrails API:', err.message);
     throw new Error('Failed to fetch data from SecurityTrails.');
   }
-}
-
-const callSecurityTrailsTool = ai.defineTool(
-    {
-      name: 'callSecurityTrails',
-      description: 'Calls the SecurityTrails API to get information about a resource.',
-      inputSchema: SecurityTrailsInputSchema,
-      outputSchema: SecurityTrailsOutputSchema,
-    },
-    async (input) => await callApi(input.resource, input.apiKey)
-);
-
-const securityTrailsFlow = ai.defineFlow(
-  {
-    name: 'securityTrailsFlow',
-    inputSchema: SecurityTrailsInputSchema,
-    outputSchema: SecurityTrailsOutputSchema,
-  },
-  async (input) => {
-    const { output } = await callSecurityTrailsTool(input);
-    return output;
-  }
-);
-
-export async function callSecurityTrails(input: SecurityTrailsInput): Promise<SecurityTrailsOutput> {
-  return await securityTrailsFlow(input);
 }

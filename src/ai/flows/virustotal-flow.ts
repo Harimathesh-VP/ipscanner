@@ -4,8 +4,6 @@
  * @fileOverview A Genkit flow for interacting with the VirusTotal API.
  * - callVirusTotal - A function that takes a resource (domain, IP, URL) and returns VirusTotal analysis.
  */
-
-import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
 
 const VirusTotalInputSchema = z.object({
@@ -14,10 +12,10 @@ const VirusTotalInputSchema = z.object({
 });
 export type VirusTotalInput = z.infer<typeof VirusTotalInputSchema>;
 
-const VirusTotalOutputSchema = z.any().describe('The JSON response from the VirusTotal API.');
-export type VirusTotalOutput = z.infer<typeof VirusTotalOutputSchema>;
+export type VirusTotalOutput = any;
 
-async function callApi(resource: string, apiKey?: string) {
+export async function callVirusTotal(input: VirusTotalInput): Promise<VirusTotalOutput> {
+  const { resource, apiKey } = input;
   const key = apiKey || process.env.VIRUSTOTAL_API_KEY;
   if (!key) {
     throw new Error('VIRUSTOTAL_API_KEY is not provided or configured.');
@@ -65,30 +63,4 @@ async function callApi(resource: string, apiKey?: string) {
     console.error('Error calling VirusTotal API:', err.message);
     throw new Error('Failed to fetch data from VirusTotal.');
   }
-}
-
-const callVirusTotalTool = ai.defineTool(
-    {
-      name: 'callVirusTotal',
-      description: 'Calls the VirusTotal API to get information about a resource.',
-      inputSchema: VirusTotalInputSchema,
-      outputSchema: VirusTotalOutputSchema,
-    },
-    async (input) => await callApi(input.resource, input.apiKey)
-);
-
-const virusTotalFlow = ai.defineFlow(
-  {
-    name: 'virusTotalFlow',
-    inputSchema: VirusTotalInputSchema,
-    outputSchema: VirusTotalOutputSchema,
-  },
-  async (input) => {
-    const { output } = await callVirusTotalTool(input);
-    return output;
-  }
-);
-
-export async function callVirusTotal(input: VirusTotalInput): Promise<VirusTotalOutput> {
-  return await virusTotalFlow(input);
 }

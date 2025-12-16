@@ -42,48 +42,40 @@ const serviceFlows: Record<string, (input: any) => Promise<any>> = {
   alienvault: (input: any) => callAlienVault(input),
 };
 
-const reportGenerationTool = ai.defineTool(
-    {
-      name: 'reportGenerationTool',
-      description: 'Gathers data from multiple threat intelligence sources.',
-      inputSchema: ReportInputSchema,
-      outputSchema: z.any(),
-    },
-    async (input) => {
-        const { indicator, selectedServices, apiKeys } = input;
-        
-        const promises = selectedServices.map(serviceId => {
-            const flow = serviceFlows[serviceId];
-            if (flow) {
-                const service = services.find(s => s.id === serviceId);
-                if (!service) return Promise.resolve({ [serviceId]: { error: 'Unknown service' } });
+async function getReportData(input: ReportInput) {
+    const { indicator, selectedServices, apiKeys } = input;
+    
+    const promises = selectedServices.map(serviceId => {
+        const flow = serviceFlows[serviceId];
+        if (flow) {
+            const service = services.find(s => s.id === serviceId);
+            if (!service) return Promise.resolve({ [serviceId]: { error: 'Unknown service' } });
 
-                const apiKey = apiKeys[serviceId];
-                if (!apiKey) {
-                    return Promise.resolve({ [serviceId]: { error: 'API key not configured for this service.' }});
-                }
-                
-                let serviceInput: any;
-
-                if (service.inputType === 'ipAddress') {
-                   serviceInput = { ipAddress: indicator, apiKey };
-                } else if (service.inputType === 'query') {
-                   serviceInput = { query: indicator, apiKey };
-                } else {
-                   serviceInput = { resource: indicator, apiKey };
-                }
-
-                return flow(serviceInput)
-                  .then(result => ({ [serviceId]: result }))
-                  .catch(e => ({ [serviceId]: {error: e.message}}));
+            const apiKey = apiKeys[serviceId];
+            if (!apiKey) {
+                return Promise.resolve({ [serviceId]: { error: 'API key not configured for this service.' }});
             }
-            return Promise.resolve({ [serviceId]: { error: 'Not implemented' } });
-        });
+            
+            let serviceInput: any;
 
-        const results = await Promise.all(promises);
-        return results.reduce((acc, current) => ({ ...acc, ...current }), {});
-    }
-);
+            if (service.inputType === 'ipAddress') {
+               serviceInput = { ipAddress: indicator, apiKey };
+            } else if (service.inputType === 'query') {
+               serviceInput = { query: indicator, apiKey };
+            } else {
+               serviceInput = { resource: indicator, apiKey };
+            }
+
+            return flow(serviceInput)
+              .then(result => ({ [serviceId]: result }))
+              .catch(e => ({ [serviceId]: {error: e.message}}));
+        }
+        return Promise.resolve({ [serviceId]: { error: 'Not implemented' } });
+    });
+
+    const results = await Promise.all(promises);
+    return results.reduce((acc, current) => ({ ...acc, ...current }), {});
+}
 
 
 const reportFlow = ai.defineFlow(
@@ -93,7 +85,7 @@ const reportFlow = ai.defineFlow(
     outputSchema: ReportOutputSchema,
   },
   async (input) => {
-    const rawData = await reportGenerationTool(input);
+    const rawData = await getReportData(input);
     
     // Create a simple summary based on which services returned data.
     const successfulServices = Object.entries(rawData)

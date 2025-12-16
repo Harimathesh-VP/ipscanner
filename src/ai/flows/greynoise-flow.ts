@@ -5,7 +5,6 @@
  * - callGreyNoise - A function that takes an IP address and returns GreyNoise analysis.
  */
 
-import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
 
 const GreyNoiseInputSchema = z.object({
@@ -14,10 +13,10 @@ const GreyNoiseInputSchema = z.object({
 });
 export type GreyNoiseInput = z.infer<typeof GreyNoiseInputSchema>;
 
-const GreyNoiseOutputSchema = z.any().describe('The JSON response from the GreyNoise API.');
-export type GreyNoiseOutput = z.infer<typeof GreyNoiseOutputSchema>;
+export type GreyNoiseOutput = any;
 
-async function callApi(ipAddress: string, apiKey?: string) {
+export async function callGreyNoise(input: GreyNoiseInput): Promise<GreyNoiseOutput> {
+  const { ipAddress, apiKey } = input;
   const key = apiKey || process.env.GREYNOISE_API_KEY;
   if (!key) {
     throw new Error('GREYNOISE_API_KEY is not provided or configured.');
@@ -40,30 +39,4 @@ async function callApi(ipAddress: string, apiKey?: string) {
     console.error('Error calling GreyNoise API:', err.message);
     throw new Error('Failed to fetch data from GreyNoise.');
   }
-}
-
-const callGreyNoiseTool = ai.defineTool(
-    {
-      name: 'callGreyNoise',
-      description: 'Calls the GreyNoise API to get information about an IP address.',
-      inputSchema: GreyNoiseInputSchema,
-      outputSchema: GreyNoiseOutputSchema,
-    },
-    async (input) => await callApi(input.ipAddress, input.apiKey)
-);
-
-const greyNoiseFlow = ai.defineFlow(
-  {
-    name: 'greyNoiseFlow',
-    inputSchema: GreyNoiseInputSchema,
-    outputSchema: GreyNoiseOutputSchema,
-  },
-  async (input) => {
-    const { output } = await callGreyNoiseTool(input);
-    return output;
-  }
-);
-
-export async function callGreyNoise(input: GreyNoiseInput): Promise<GreyNoiseOutput> {
-  return await greyNoiseFlow(input);
 }
