@@ -16,7 +16,6 @@ import {
 } from '@/components/ui/sidebar';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
-  BarChart,
   History,
   LayoutDashboard,
   LogOut,
@@ -40,7 +39,6 @@ import { services } from '@/lib/services';
 const navItems = [
   { href: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
   { href: '/dashboard/history', icon: History, label: 'History' },
-  { href: '/dashboard/reports', icon: BarChart, label: 'Reports' },
   { href: '/dashboard/settings', icon: Settings, label: 'Settings' },
 ];
 
