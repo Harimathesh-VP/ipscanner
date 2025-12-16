@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Search } from 'lucide-react';
+import { Copy, Search } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useApiKeys } from '@/context/api-keys-context';
 import { callVirusTotal } from '@/ai/flows/virustotal-flow';
@@ -34,6 +34,14 @@ export function ApiRequester() {
 
   const handleInputChange = (serviceId: string, value: string) => {
     setInputValues((prev) => ({ ...prev, [serviceId]: value }));
+  };
+
+  const handleCopyJson = (json: any) => {
+    navigator.clipboard.writeText(JSON.stringify(json, null, 2));
+    toast({
+      title: 'Copied to Clipboard',
+      description: 'The JSON response has been copied.',
+    });
   };
 
   const handleSubmit = async (serviceId: string) => {
@@ -148,8 +156,15 @@ export function ApiRequester() {
               )}
               {results[service.id] && (
                 <Card className="bg-muted/50 mt-4">
-                  <CardContent className="p-4">
-                    <pre className="text-sm font-code overflow-x-auto p-2 bg-background rounded-md">
+                   <CardHeader className="flex-row items-center justify-between py-3 px-4 border-b">
+                     <CardTitle className="text-base font-medium">Raw JSON</CardTitle>
+                     <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleCopyJson(results[service.id])}>
+                        <Copy className="h-4 w-4" />
+                        <span className="sr-only">Copy JSON</span>
+                     </Button>
+                   </CardHeader>
+                  <CardContent className="p-0">
+                    <pre className="text-sm font-code overflow-x-auto p-4">
                       {JSON.stringify(results[service.id], null, 2)}
                     </pre>
                   </CardContent>
