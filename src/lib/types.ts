@@ -1,9 +1,9 @@
-import type { LucideIcon } from 'lucide-react';
+import type { FC, SVGProps } from 'react';
 
 export type Service = {
   id: string;
   name: string;
-  icon: LucideIcon;
+  icon: FC<SVGProps<SVGSVGElement>>;
   description: string;
   placeholder: string;
   inputType: 'resource' | 'ipAddress' | 'query';

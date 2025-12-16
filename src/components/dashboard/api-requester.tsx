@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Copy, Search, Eye } from 'lucide-react';
+import { Copy, Search } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useApiKeys } from '@/context/api-keys-context';
 import { callVirusTotal } from '@/ai/flows/virustotal-flow';
@@ -16,6 +16,7 @@ import { callGreyNoise } from '@/ai/flows/greynoise-flow';
 import { callShodan } from '@/ai/flows/shodan-flow';
 import { callAlienVault } from '@/ai/flows/alienvault-flow';
 import { VirusTotalResultViewer } from './virustotal-result-viewer';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 
 const serviceFlows: Record<string, (input: any) => Promise<any>> = {
@@ -115,74 +116,82 @@ export function ApiRequester() {
   };
 
   return (
-    <div className="grid gap-6 md:grid-cols-2">
+    <Tabs defaultValue={services[0].id} className="w-full">
+      <TabsList className="grid w-full grid-cols-2 md:grid-cols-3 lg:grid-cols-6">
+        {services.map((service) => (
+          <TabsTrigger key={service.id} value={service.id} className="flex-col h-14 gap-1">
+             <service.icon className="h-6 w-6" />
+             <span className="text-xs">{service.name}</span>
+          </TabsTrigger>
+        ))}
+      </TabsList>
       {services.map((service) => (
-        <Card key={service.id}>
-          <CardHeader>
-            <div className="flex items-center gap-3">
-               <service.icon className="h-6 w-6 text-muted-foreground" />
-               <div>
-                <CardTitle>{service.name}</CardTitle>
-                <CardDescription className="text-xs pt-1">{service.description}</CardDescription>
-               </div>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <form
-                className="flex w-full items-center space-x-2"
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  handleSubmit(service.id);
-                }}
-              >
-                <div className="relative flex-grow">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    placeholder={service.placeholder}
-                    className="pl-10"
-                    value={inputValues[service.id] || ''}
-                    onChange={(e) => handleInputChange(service.id, e.target.value)}
-                  />
+        <TabsContent key={service.id} value={service.id}>
+           <Card className="mt-4">
+            <CardHeader>
+                <CardTitle className="flex items-center gap-3">
+                    <service.icon className="h-6 w-6 text-muted-foreground" />
+                    {service.name}
+                </CardTitle>
+                <CardDescription>{service.description}</CardDescription>
+            </CardHeader>
+            <CardContent>
+                <div className="space-y-4">
+                <form
+                    className="flex w-full items-center space-x-2"
+                    onSubmit={(e) => {
+                    e.preventDefault();
+                    handleSubmit(service.id);
+                    }}
+                >
+                    <div className="relative flex-grow">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                        placeholder={service.placeholder}
+                        className="pl-10"
+                        value={inputValues[service.id] || ''}
+                        onChange={(e) => handleInputChange(service.id, e.target.value)}
+                    />
+                    </div>
+                    <Button type="submit" disabled={loading[service.id]}>
+                    {loading[service.id] ? 'Fetching...' : 'Fetch'}
+                    </Button>
+                </form>
+                {loading[service.id] && (
+                    <div className="space-y-2 pt-2">
+                    <Skeleton className="h-4 w-full" />
+                    <Skeleton className="h-4 w-5/6" />
+                    <Skeleton className="h-4 w-full" />
+                    <Skeleton className="h-4 w-4/6" />
+                    </div>
+                )}
+                {results[service.id] && (
+                    <>
+                    {service.id === 'virustotal' && results[service.id]?.data?.attributes?.last_analysis_results ? (
+                        <VirusTotalResultViewer result={results[service.id]} />
+                    ) : (
+                        <Card className="bg-muted/50 mt-4">
+                        <CardHeader className="flex-row items-center justify-between py-3 px-4 border-b">
+                            <CardTitle className="text-base font-medium">Raw JSON</CardTitle>
+                            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleCopyJson(results[service.id])}>
+                                <Copy className="h-4 w-4" />
+                                <span className="sr-only">Copy JSON</span>
+                            </Button>
+                        </CardHeader>
+                        <CardContent className="p-0">
+                            <pre className="text-sm font-code overflow-x-auto p-4 max-h-[500px]">
+                            {JSON.stringify(results[service.id], null, 2)}
+                            </pre>
+                        </CardContent>
+                        </Card>
+                    )}
+                    </>
+                )}
                 </div>
-                <Button type="submit" disabled={loading[service.id]}>
-                  {loading[service.id] ? 'Fetching...' : 'Fetch'}
-                </Button>
-              </form>
-              {loading[service.id] && (
-                <div className="space-y-2 pt-2">
-                  <Skeleton className="h-4 w-full" />
-                  <Skeleton className="h-4 w-5/6" />
-                  <Skeleton className="h-4 w-full" />
-                  <Skeleton className="h-4 w-4/6" />
-                </div>
-              )}
-              {results[service.id] && (
-                <>
-                 {service.id === 'virustotal' && results[service.id]?.data?.attributes?.last_analysis_results ? (
-                    <VirusTotalResultViewer result={results[service.id]} />
-                  ) : (
-                    <Card className="bg-muted/50 mt-4">
-                      <CardHeader className="flex-row items-center justify-between py-3 px-4 border-b">
-                        <CardTitle className="text-base font-medium">Raw JSON</CardTitle>
-                        <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleCopyJson(results[service.id])}>
-                            <Copy className="h-4 w-4" />
-                            <span className="sr-only">Copy JSON</span>
-                        </Button>
-                      </CardHeader>
-                      <CardContent className="p-0">
-                        <pre className="text-sm font-code overflow-x-auto p-4">
-                          {JSON.stringify(results[service.id], null, 2)}
-                        </pre>
-                      </CardContent>
-                    </Card>
-                  )}
-                </>
-              )}
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+            </Card>
+        </TabsContent>
       ))}
-    </div>
+    </Tabs>
   );
 }
