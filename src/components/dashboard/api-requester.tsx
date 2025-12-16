@@ -20,6 +20,7 @@ import { callCiscoTalos } from '@/ai/flows/ciscotalos-flow';
 import { callIBMForce } from '@/ai/flows/ibm-xforce-flow';
 import { VirusTotalResultViewer } from './virustotal-result-viewer';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Textarea } from '../ui/textarea';
 
 
 const serviceFlows: Record<string, (input: any) => Promise<any>> = {
@@ -184,12 +185,11 @@ export function ApiRequester() {
                     {service.id === 'virustotal' && results[service.id]?.data?.attributes?.last_analysis_results ? (
                         <VirusTotalResultViewer result={results[service.id]} />
                     ) : (
-                       <Card className="bg-muted/50 mt-4">
-                        <CardContent className="p-6 text-center text-muted-foreground">
-                            <p>Response received.</p>
-                            <p className="text-xs">Click the "Copy JSON" button above to view the raw data.</p>
-                        </CardContent>
-                       </Card>
+                       <Textarea
+                          readOnly
+                          value={JSON.stringify(results[service.id], null, 2)}
+                          className="h-64 font-code text-xs bg-muted/50 mt-4"
+                        />
                     )}
                     </>
                 )}
