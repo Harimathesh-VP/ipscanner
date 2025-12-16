@@ -1,12 +1,11 @@
 'use server';
 
 /**
- * @fileOverview A Genkit flow for generating a consolidated threat intelligence report.
+ * @fileOverview A function for generating a consolidated threat intelligence report.
  * - generateReport - A function that takes an indicator and returns data from multiple sources.
  */
 
-import { ai } from '@/ai/genkit';
-import { z } from 'genkit';
+import { z } from 'zod';
 import { callVirusTotal } from './virustotal-flow';
 import { callAbuseIPDB } from './abuseipdb-flow';
 import { callSecurityTrails } from './securitytrails-flow';
@@ -34,12 +33,12 @@ const ReportOutputSchema = z.object({
 export type ReportOutput = z.infer<typeof ReportOutputSchema>;
 
 const serviceFlows: Record<string, (input: any) => Promise<any>> = {
-  virustotal: (input: any) => callVirusTotal(input),
-  abuseipdb: (input: any) => callAbuseIPDB(input),
-  securitytrails: (input: any) => callSecurityTrails(input),
-  greynoise: (input: any) => callGreyNoise(input),
-  shodan: (input: any) => callShodan(input),
-  alienvault: (input: any) => callAlienVault(input),
+  virustotal: callVirusTotal,
+  abuseipdb: callAbuseIPDB,
+  securitytrails: callSecurityTrails,
+  greynoise: callGreyNoise,
+  shodan: callShodan,
+  alienvault: callAlienVault,
 };
 
 async function getReportData(input: ReportInput) {
@@ -78,13 +77,7 @@ async function getReportData(input: ReportInput) {
 }
 
 
-const reportFlow = ai.defineFlow(
-  {
-    name: 'reportFlow',
-    inputSchema: ReportInputSchema,
-    outputSchema: ReportOutputSchema,
-  },
-  async (input) => {
+export async function generateReport(input: ReportInput): Promise<ReportOutput> {
     const rawData = await getReportData(input);
     
     // Create a simple summary based on which services returned data.
@@ -120,15 +113,9 @@ const reportFlow = ai.defineFlow(
         }
     }
 
-
     return {
       summary,
       rawData,
       chartData,
     };
-  }
-);
-
-export async function generateReport(input: ReportInput): Promise<ReportOutput> {
-  return await reportFlow(input);
 }

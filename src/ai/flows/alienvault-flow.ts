@@ -1,11 +1,11 @@
 'use server';
 
 /**
- * @fileOverview A Genkit flow for interacting with the AlienVault OTX API.
+ * @fileOverview A function for interacting with the AlienVault OTX API.
  * - callAlienVault - A function that takes a resource (IP, domain, hash) and returns OTX data.
  */
 
-import { z } from 'genkit';
+import { z } from 'zod';
 
 const AlienVaultInputSchema = z.object({
   resource: z.string().describe('The IP, domain, or hash to query.'),

@@ -1,7 +1,7 @@
 'use server';
 
 /**
- * @fileOverview A Genkit flow for interacting with the SecurityTrails API.
+ * @fileOverview A function for interacting with the SecurityTrails API.
  * - callSecurityTrails - A function that takes a resource (domain or IP) and returns SecurityTrails data.
  */
 

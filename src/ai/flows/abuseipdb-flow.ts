@@ -1,11 +1,11 @@
 'use server';
 
 /**
- * @fileOverview A Genkit flow for interacting with the AbuseIPDB API.
+ * @fileOverview A function for interacting with the AbuseIPDB API.
  * - callAbuseIPDB - A function that takes an IP address and returns AbuseIPDB analysis.
  */
 
-import { z } from 'genkit';
+import { z } from 'zod';
 
 const AbuseIPDBInputSchema = z.object({
   ipAddress: z.string().describe('The IP address to query.'),

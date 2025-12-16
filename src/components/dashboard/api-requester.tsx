@@ -17,12 +17,12 @@ import { callShodan } from '@/ai/flows/shodan-flow';
 import { callAlienVault } from '@/ai/flows/alienvault-flow';
 
 const serviceFlows: Record<string, (input: any) => Promise<any>> = {
-  virustotal: (input: any) => callVirusTotal(input),
-  abuseipdb: (input: any) => callAbuseIPDB(input),
-  securitytrails: (input: any) => callSecurityTrails(input),
-  greynoise: (input: any) => callGreyNoise(input),
-  shodan: (input: any) => callShodan(input),
-  alienvault: (input: any) => callAlienVault(input),
+  virustotal: callVirusTotal,
+  abuseipdb: callAbuseIPDB,
+  securitytrails: callSecurityTrails,
+  greynoise: callGreyNoise,
+  shodan: callShodan,
+  alienvault: callAlienVault,
 };
 
 export function ApiRequester() {

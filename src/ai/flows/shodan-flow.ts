@@ -1,11 +1,11 @@
 'use server';
 
 /**
- * @fileOverview A Genkit flow for interacting with the Shodan API.
+ * @fileOverview A function for interacting with the Shodan API.
  * - callShodan - A function that takes an IP or query and returns Shodan data.
  */
 
-import { z } from 'genkit';
+import { z } from 'zod';
 
 const ShodanInputSchema = z.object({
   query: z.string().describe('The IP address or search query.'),

@@ -1,10 +1,10 @@
 'use server';
 
 /**
- * @fileOverview A Genkit flow for interacting with the VirusTotal API.
+ * @fileOverview A function for interacting with the VirusTotal API.
  * - callVirusTotal - A function that takes a resource (domain, IP, URL) and returns VirusTotal analysis.
  */
-import { z } from 'genkit';
+import { z } from 'zod';
 
 const VirusTotalInputSchema = z.object({
   resource: z.string().describe('The domain, IP address, or URL to query.'),
@@ -59,7 +59,8 @@ export async function callVirusTotal(input: VirusTotalInput): Promise<VirusTotal
 
     return mainData;
 
-  } catch (err: any) {
+  } catch (err: any)
+   {
     console.error('Error calling VirusTotal API:', err.message);
     throw new Error('Failed to fetch data from VirusTotal.');
   }

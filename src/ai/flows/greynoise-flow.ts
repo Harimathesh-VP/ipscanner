@@ -1,11 +1,11 @@
 'use server';
 
 /**
- * @fileOverview A Genkit flow for interacting with the GreyNoise API.
+ * @fileOverview A function for interacting with the GreyNoise API.
  * - callGreyNoise - A function that takes an IP address and returns GreyNoise analysis.
  */
 
-import { z } from 'genkit';
+import { z } from 'zod';
 
 const GreyNoiseInputSchema = z.object({
   ipAddress: z.string().describe('The IP address to query.'),
