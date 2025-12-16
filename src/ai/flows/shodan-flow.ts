@@ -29,7 +29,7 @@ export async function callShodan(input: ShodanInput): Promise<ShodanOutput> {
   } 
   // Assume search query
   else {
-    endpoint = `https://api.shodan.io/shodan/host/search?key=${key}&query=${encodeURIComponent(query)}`;
+    endpoint = `https://api.shodan.io/shodan/host/search?query=${encodeURIComponent(query)}&key=${key}`;
   }
 
   try {
@@ -38,12 +38,23 @@ export async function callShodan(input: ShodanInput): Promise<ShodanOutput> {
     });
 
     if (!response.ok) {
-      throw new Error(`Shodan API error! status: ${response.status}`);
+      const errorText = await response.text();
+      let errorMessage = `Shodan API error! status: ${response.status}`;
+      try {
+        const errorJson = JSON.parse(errorText);
+        if (errorJson.error) {
+          errorMessage += ` - ${errorJson.error}`;
+        }
+      } catch (e) {
+        errorMessage += ` - ${errorText}`;
+      }
+      throw new Error(errorMessage);
     }
 
     return await response.json();
   } catch (err: any) {
     console.error('Error calling Shodan API:', err.message);
-    throw new Error('Failed to fetch data from Shodan.');
+    // Re-throw the original error which might be more specific.
+    throw new Error(err.message || 'Failed to fetch data from Shodan.');
   }
 }
