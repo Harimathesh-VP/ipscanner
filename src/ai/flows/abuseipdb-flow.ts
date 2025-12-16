@@ -23,29 +23,15 @@ async function callApi(ipAddress: string) {
   }
   
   try {
-    const whoisResponse = await fetch(`https://api.abuseipdb.com/api/v2/check?ipAddress=${ipAddress}&whois=true`, {
+    const response = await fetch(`https://api.abuseipdb.com/api/v2/check?ipAddress=${ipAddress}&maxAgeInDays=90&verbose=true`, {
       headers: { 'Key': apiKey, 'Accept': 'application/json' },
     });
 
-    if (!whoisResponse.ok) {
-      throw new Error(`AbuseIPDB API error! status: ${whoisResponse.status}`);
+    if (!response.ok) {
+      throw new Error(`AbuseIPDB API error! status: ${response.status}`);
     }
 
-    const whoisData = await whoisResponse.json();
-
-    const reportsResponse = await fetch(`https://api.abuseipdb.com/api/v2/reports?ipAddress=${ipAddress}&maxAgeInDays=90`, {
-        headers: { 'Key': apiKey, 'Accept': 'application/json' },
-      });
-
-    if (!reportsResponse.ok) {
-        console.error(`AbuseIPDB Reports API error! status: ${reportsResponse.status}`);
-    }
-
-    const reportsData = await reportsResponse.json();
-
-    whoisData.data.reports = reportsData.data.results;
-    
-    return whoisData;
+    return await response.json();
   } catch (err: any) {
     console.error('Error calling AbuseIPDB API:', err.message);
     throw new Error('Failed to fetch data from AbuseIPDB.');

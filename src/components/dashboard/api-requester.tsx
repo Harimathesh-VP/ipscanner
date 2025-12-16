@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { services } from '@/lib/services';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -10,11 +10,18 @@ import { Search } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { callVirusTotal } from '@/ai/flows/virustotal-flow';
 import { callAbuseIPDB } from '@/ai/flows/abuseipdb-flow';
+import { callSecurityTrails } from '@/ai/flows/securitytrails-flow';
+import { callGreyNoise } from '@/ai/flows/greynoise-flow';
+import { callShodan } from '@/ai/flows/shodan-flow';
+import { callAlienVault } from '@/ai/flows/alienvault-flow';
 
 const serviceFlows: Record<string, (input: any) => Promise<any>> = {
   virustotal: (input: string) => callVirusTotal({ resource: input }),
   abuseipdb: (input: string) => callAbuseIPDB({ ipAddress: input }),
-  // Add other service flows here
+  securitytrails: (input: string) => callSecurityTrails({ resource: input }),
+  greynoise: (input: string) => callGreyNoise({ ipAddress: input }),
+  shodan: (input: string) => callShodan({ query: input }),
+  alienvault: (input: string) => callAlienVault({ resource: input }),
 };
 
 
@@ -46,15 +53,6 @@ export function ApiRequester() {
         title: 'Service Not Implemented',
         description: `The service "${serviceId}" is not connected to a live API yet.`,
       });
-      // Mock response for unimplemented services
-      setLoading((prev) => ({ ...prev, [serviceId]: true }));
-      setTimeout(() => {
-        setResults((prev) => ({
-          ...prev,
-          [serviceId]: { message: 'This service is not yet implemented for live data.' },
-        }));
-        setLoading((prev) => ({ ...prev, [serviceId]: false }));
-      }, 500);
       return;
     }
 
@@ -90,7 +88,10 @@ export function ApiRequester() {
           <CardHeader>
             <div className="flex items-center gap-3">
                <service.icon className="h-6 w-6 text-muted-foreground" />
-               <CardTitle>{service.name}</CardTitle>
+               <div>
+                <CardTitle>{service.name}</CardTitle>
+                <CardDescription className="text-xs pt-1">{service.description}</CardDescription>
+               </div>
             </div>
           </CardHeader>
           <CardContent>
@@ -116,14 +117,15 @@ export function ApiRequester() {
                 </Button>
               </form>
               {loading[service.id] && (
-                <div className="space-y-2">
-                  <Skeleton className="h-4 w-[250px]" />
-                  <Skeleton className="h-4 w-[200px]" />
-                  <Skeleton className="h-4 w-[220px]" />
+                <div className="space-y-2 pt-2">
+                  <Skeleton className="h-4 w-full" />
+                  <Skeleton className="h-4 w-5/6" />
+                  <Skeleton className="h-4 w-full" />
+                  <Skeleton className="h-4 w-4/6" />
                 </div>
               )}
               {results[service.id] && (
-                <Card className="bg-muted/50">
+                <Card className="bg-muted/50 mt-4">
                   <CardContent className="p-4">
                     <pre className="text-sm font-code overflow-x-auto p-2 bg-background rounded-md">
                       {JSON.stringify(results[service.id], null, 2)}

@@ -4,3 +4,7 @@ config();
 import '@/ai/flows/generate-data-visualization.ts';
 import '@/ai/flows/virustotal-flow.ts';
 import '@/ai/flows/abuseipdb-flow.ts';
+import '@/ai/flows/securitytrails-flow.ts';
+import '@/ai/flows/greynoise-flow.ts';
+import '@/ai/flows/shodan-flow.ts';
+import '@/ai/flows/alienvault-flow.ts';

@@ -23,48 +23,42 @@ async function callApi(resource: string) {
   }
 
   let url;
+  let resourceType;
   try {
     // Basic check for IP address
     if (/^\d{1,3}(\.\d{1,3}){3}$/.test(resource)) {
       url = `https://www.virustotal.com/api/v3/ip_addresses/${resource}`;
-    } 
+      resourceType = 'ip_address';
+    }
     // Basic check for domain
     else if (/^[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(resource)) {
       url = `https://www.virustotal.com/api/v3/domains/${resource}`;
-    } 
+      resourceType = 'domain';
+    }
     // Assume URL otherwise
     else {
-      // VirusTotal requires URL to be base64 encoded without padding
-      const encodedUrl = Buffer.from(resource).toString('base64').replace(/=/g, '');
-      url = `https://www.virustotal.com/api/v3/urls/${encodedUrl}`;
-    }
-    
-    // Add whois lookup for domains and IPs
-    if (url.includes('ip_addresses') || url.includes('domains')) {
-        const whoisUrl = `${url}/whois`;
-        const whoisResponse = await fetch(whoisUrl, { headers: { 'x-apikey': apiKey } });
-        if (!whoisResponse.ok) {
-            console.error(`VirusTotal WHOIS API error! status: ${whoisResponse.status}`);
-        }
-        const whoisData = await whoisResponse.json();
-
-        const mainResponse = await fetch(url, { headers: { 'x-apikey': apiKey } });
-        if (!mainResponse.ok) {
-            throw new Error(`VirusTotal API error! status: ${mainResponse.status}`);
-        }
-        const mainData = await mainResponse.json();
-        
-        mainData.data.attributes.whois = whoisData?.data?.attributes?.whois;
-        return mainData;
-
-    } else {
-         const response = await fetch(url, { headers: { 'x-apikey': apiKey } });
-        if (!response.ok) {
-            throw new Error(`VirusTotal API error! status: ${response.status}`);
-        }
-        return response.json();
+       // VirusTotal requires URL to be base64 encoded without padding
+       const encodedUrl = Buffer.from(resource).toString('base64').replace(/=/g, '');
+       url = `https://www.virustotal.com/api/v3/urls/${encodedUrl}`;
+       resourceType = 'url';
     }
 
+    const mainResponse = await fetch(url, { headers: { 'x-apikey': apiKey } });
+    if (!mainResponse.ok) {
+        throw new Error(`VirusTotal API error! status: ${mainResponse.status}`);
+    }
+    const mainData = await mainResponse.json();
+
+    // For IPs and domains, fetch related data like resolutions or subdomains
+    if (resourceType === 'ip_address') {
+        const resolutionsResponse = await fetch(`${url}/resolutions`, { headers: { 'x-apikey': apiKey } });
+        if(resolutionsResponse.ok) mainData.data.attributes.resolutions = (await resolutionsResponse.json()).data;
+    } else if (resourceType === 'domain') {
+        const subdomainsResponse = await fetch(`${url}/subdomains`, { headers: { 'x-apikey': apiKey } });
+        if(subdomainsResponse.ok) mainData.data.attributes.subdomains = (await subdomainsResponse.json()).data;
+    }
+
+    return mainData;
 
   } catch (err: any) {
     console.error('Error calling VirusTotal API:', err.message);
