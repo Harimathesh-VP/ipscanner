@@ -20,7 +20,6 @@ import {
   LayoutDashboard,
   LogOut,
   Settings,
-  ShieldCheck,
   FileText,
   CheckCircle,
 } from 'lucide-react';
@@ -36,6 +35,7 @@ import { Button } from '@/components/ui/button';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { useApiKeys } from '@/context/api-keys-context';
 import { services } from '@/lib/services';
+import { ApiSentinelLogo } from '@/components/logos/api-sentinel-logo';
 
 const navItems = [
   { href: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
@@ -54,10 +54,10 @@ export default function AppSidebar() {
   return (
     <Sidebar>
       <SidebarHeader>
-        <div className="flex items-center gap-2">
-          <ShieldCheck className="size-7 text-primary" />
+        <Link href="/" className="flex items-center gap-2">
+          <ApiSentinelLogo className="size-7 text-primary" />
           <span className="text-xl font-semibold font-headline">API Sentinel</span>
-        </div>
+        </Link>
       </SidebarHeader>
       <SidebarContent className="p-2">
         <SidebarMenu>

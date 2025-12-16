@@ -4,3 +4,4 @@ export * from './securitytrails-logo';
 export * from './greynoise-logo';
 export * from './shodan-logo';
 export * from './alienvault-logo';
+export * from './api-sentinel-logo';
