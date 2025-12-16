@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import { mockRequestLogs as generateMockLogs } from '@/lib/mock-data';
 import type { RequestLog } from '@/lib/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -24,7 +23,7 @@ import {
 
 export default function HistoryPage() {
   const [searchQuery, setSearchQuery] = useState('');
-  const [logs, setLogs] = useState<RequestLog[]>(() => generateMockLogs());
+  const [logs, setLogs] = useState<RequestLog[]>([]);
 
   const filteredLogs = logs.filter(log =>
     log.target.toLowerCase().includes(searchQuery.toLowerCase()) ||

@@ -3,13 +3,20 @@
 import { KeyRound, Search, History } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useApiKeys } from '@/context/api-keys-context';
-import { mockRequestLogs } from '@/lib/mock-data';
+import { useState, useEffect } from 'react';
 
 export function DashboardStats() {
   const { apiKeys, lookupCount } = useApiKeys();
+  const [historyCount, setHistoryCount] = useState(0);
+
+  // This is a placeholder for fetching real history count.
+  // In a real app, this would come from a persistent store.
+  useEffect(() => {
+    // For now, we'll keep it at 0 since mock data is removed.
+    setHistoryCount(0);
+  }, []);
 
   const configuredKeysCount = Object.keys(apiKeys).length;
-  const historyCount = mockRequestLogs.length;
 
   const stats = [
     {
