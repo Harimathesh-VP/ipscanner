@@ -18,10 +18,13 @@ import {
   Network,
   ShieldCheck,
   Eye,
+  Globe,
+  Milestone,
 } from 'lucide-react';
 import { Button } from '../ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../ui/table';
+import { Separator } from '../ui/separator';
 
 type AnalysisResult = {
   category: string;
@@ -53,13 +56,18 @@ type WhoisData = Record<string, any>;
 type VirusTotalResult = {
   data?: {
     attributes?: {
+      asn?: number;
+      as_owner?: string;
+      network?: string;
+      country?: string;
+      continent?: string;
       last_analysis_results?: Record<string, AnalysisResult>;
       last_analysis_stats?: AnalysisStats;
       resolutions?: NetworkInfo[];
       subdomains?: NetworkInfo[];
       whois?: WhoisData;
     };
-    type?: 'ip_address' | 'domain';
+    type?: 'ip_address' | 'domain' | 'url';
   };
 };
 
@@ -120,7 +128,7 @@ export function VirusTotalResultViewer({ result }: VirusTotalResultViewerProps) 
   };
 
   const networkInfo = type === 'ip_address' ? attributes?.resolutions : attributes?.subdomains;
-  const hasNetworkInfo = networkInfo && networkInfo.length > 0;
+  const hasNetworkInfo = (networkInfo && networkInfo.length > 0) || (type === 'ip_address' && attributes?.asn);
   const hasWhois = attributes?.whois && Object.keys(attributes.whois).length > 0;
 
   return (
@@ -198,35 +206,76 @@ export function VirusTotalResultViewer({ result }: VirusTotalResultViewerProps) 
         )}
         
       </TabsContent>
-       <TabsContent value="network" className="pt-4">
-        <Card>
-            <CardHeader>
-                <CardTitle>{type === 'ip_address' ? 'DNS Resolutions' : 'Subdomains'}</CardTitle>
-                <CardDescription>
-                    {type === 'ip_address' ? 'Hostnames that have resolved to this IP address.' : 'Subdomains discovered for this domain.'}
-                </CardDescription>
-            </CardHeader>
-            <CardContent>
-                <Table>
-                    <TableHeader>
-                        <TableRow>
-                            <TableHead>{type === 'ip_address' ? 'Hostname' : 'Subdomain'}</TableHead>
-                            <TableHead className="text-right">Last Resolved</TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {networkInfo?.map((item) => (
-                            <TableRow key={item.id}>
-                                <TableCell className="font-mono text-xs">{item.attributes.host_name || item.id}</TableCell>
-                                <TableCell className="text-right text-muted-foreground text-xs">
-                                    {item.attributes.last_resolved ? new Date(item.attributes.last_resolved * 1000).toLocaleDateString() : 'N/A'}
-                                </TableCell>
+       <TabsContent value="network" className="pt-4 space-y-4">
+        {type === 'ip_address' && attributes?.asn && (
+            <Card>
+                <CardHeader>
+                    <CardTitle>ASN & Network</CardTitle>
+                    <CardDescription>Autonomous System and network block information for this IP.</CardDescription>
+                </CardHeader>
+                <CardContent className="grid md:grid-cols-2 gap-x-8 gap-y-4">
+                     <div className="flex items-center gap-3">
+                        <Milestone className="h-5 w-5 text-muted-foreground" />
+                        <div>
+                            <p className="text-xs text-muted-foreground">ASN</p>
+                            <p className="font-medium">{attributes.asn}</p>
+                        </div>
+                     </div>
+                     <div className="flex items-center gap-3">
+                        <Network className="h-5 w-5 text-muted-foreground" />
+                        <div>
+                            <p className="text-xs text-muted-foreground">CIDR / Range</p>
+                            <p className="font-medium font-code">{attributes.network}</p>
+                        </div>
+                     </div>
+                     <div className="flex items-center gap-3">
+                        <ShieldCheck className="h-5 w-5 text-muted-foreground" />
+                        <div>
+                            <p className="text-xs text-muted-foreground">Owner</p>
+                            <p className="font-medium">{attributes.as_owner}</p>
+                        </div>
+                     </div>
+                     <div className="flex items-center gap-3">
+                        <Globe className="h-5 w-5 text-muted-foreground" />
+                        <div>
+                            <p className="text-xs text-muted-foreground">Location</p>
+                            <p className="font-medium">{attributes.country} ({attributes.continent})</p>
+                        </div>
+                     </div>
+                </CardContent>
+            </Card>
+        )}
+
+        {networkInfo && networkInfo.length > 0 && (
+            <Card>
+                <CardHeader>
+                    <CardTitle>{type === 'ip_address' ? 'DNS Resolutions' : 'Subdomains'}</CardTitle>
+                    <CardDescription>
+                        {type === 'ip_address' ? 'Hostnames that have resolved to this IP address.' : 'Subdomains discovered for this domain.'}
+                    </CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <Table>
+                        <TableHeader>
+                            <TableRow>
+                                <TableHead>{type === 'ip_address' ? 'Hostname' : 'Subdomain'}</TableHead>
+                                <TableHead className="text-right">Last Resolved</TableHead>
                             </TableRow>
-                        ))}
-                    </TableBody>
-                </Table>
-            </CardContent>
-        </Card>
+                        </TableHeader>
+                        <TableBody>
+                            {networkInfo?.map((item) => (
+                                <TableRow key={item.id}>
+                                    <TableCell className="font-mono text-xs">{item.attributes.host_name || item.id}</TableCell>
+                                    <TableCell className="text-right text-muted-foreground text-xs">
+                                        {item.attributes.last_resolved ? new Date(item.attributes.last_resolved * 1000).toLocaleDateString() : 'N/A'}
+                                    </TableCell>
+                                </TableRow>
+                            ))}
+                        </TableBody>
+                    </Table>
+                </CardContent>
+            </Card>
+        )}
       </TabsContent>
       <TabsContent value="whois" className="pt-4">
         <Card>
