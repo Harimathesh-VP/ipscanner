@@ -28,12 +28,13 @@ export async function callAbuseIPDB(input: AbuseIPDBInput): Promise<AbuseIPDBOut
     });
 
     if (!response.ok) {
-      throw new Error(`AbuseIPDB API error! status: ${response.status}`);
+       const errorData = await response.json();
+       throw new Error(errorData.errors[0]?.detail || `AbuseIPDB API error! status: ${response.status}`);
     }
 
     return await response.json();
   } catch (err: any) {
     console.error('Error calling AbuseIPDB API:', err.message);
-    throw new Error('Failed to fetch data from AbuseIPDB.');
+    throw new Error(err.message || 'Failed to fetch data from AbuseIPDB.');
   }
 }

@@ -19,6 +19,7 @@ import { callIPQualityScore } from '@/ai/flows/ipqualityscore-flow';
 import { callCiscoTalos } from '@/ai/flows/ciscotalos-flow';
 import { callIBMForce } from '@/ai/flows/ibm-xforce-flow';
 import { VirusTotalResultViewer } from './virustotal-result-viewer';
+import { AbuseIPDBResultViewer } from './abuseipdb-result-viewer';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '../ui/textarea';
 
@@ -182,15 +183,17 @@ export function ApiRequester() {
                 )}
                 {results[service.id] && (
                     <>
-                    {service.id === 'virustotal' && results[service.id]?.data?.attributes?.last_analysis_results ? (
-                        <VirusTotalResultViewer result={results[service.id]} />
-                    ) : (
-                       <Textarea
-                          readOnly
-                          value={JSON.stringify(results[service.id], null, 2)}
-                          className="h-64 font-code text-xs bg-muted/50 mt-4"
-                        />
-                    )}
+                      {service.id === 'virustotal' ? (
+                          <VirusTotalResultViewer result={results[service.id]} />
+                      ) : service.id === 'abuseipdb' ? (
+                          <AbuseIPDBResultViewer result={results[service.id]} />
+                      ) : (
+                         <Textarea
+                            readOnly
+                            value={JSON.stringify(results[service.id], null, 2)}
+                            className="h-64 font-code text-xs bg-muted/50 mt-4"
+                          />
+                      )}
                     </>
                 )}
                 </div>
