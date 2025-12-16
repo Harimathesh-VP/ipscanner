@@ -20,6 +20,9 @@ import { callCiscoTalos } from '@/ai/flows/ciscotalos-flow';
 import { callIBMForce } from '@/ai/flows/ibm-xforce-flow';
 import { VirusTotalResultViewer } from './virustotal-result-viewer';
 import { AbuseIPDBResultViewer } from './abuseipdb-result-viewer';
+import { GreyNoiseResultViewer } from './greynoise-result-viewer';
+import { AlienVaultResultViewer } from './alienvault-result-viewer';
+import { IPQualityScoreResultViewer } from './ipqualityscore-result-viewer';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '../ui/textarea';
 
@@ -124,6 +127,14 @@ export function ApiRequester() {
       setLoading((prev) => ({ ...prev, [serviceId]: false }));
     }
   };
+  
+  const resultViewers: Record<string, React.ComponentType<{ result: any }>> = {
+      virustotal: VirusTotalResultViewer,
+      abuseipdb: AbuseIPDBResultViewer,
+      greynoise: GreyNoiseResultViewer,
+      alienvault: AlienVaultResultViewer,
+      ipqualityscore: IPQualityScoreResultViewer,
+  };
 
   return (
     <Tabs defaultValue={services[0].id} className="w-full">
@@ -185,17 +196,19 @@ export function ApiRequester() {
                 )}
                 {results[service.id] && (
                     <>
-                      {service.id === 'virustotal' ? (
-                          <VirusTotalResultViewer result={results[service.id]} />
-                      ) : service.id === 'abuseipdb' ? (
-                          <AbuseIPDBResultViewer result={results[service.id]} />
-                      ) : (
-                         <Textarea
-                            readOnly
-                            value={JSON.stringify(results[service.id], null, 2)}
-                            className="h-64 font-code text-xs bg-muted/50 mt-4"
-                          />
-                      )}
+                      {(() => {
+                          const Viewer = resultViewers[service.id];
+                          if (Viewer) {
+                              return <Viewer result={results[service.id]} />;
+                          }
+                          return (
+                             <Textarea
+                                readOnly
+                                value={JSON.stringify(results[service.id], null, 2)}
+                                className="h-64 font-code text-xs bg-muted/50 mt-4"
+                              />
+                          );
+                      })()}
                     </>
                 )}
                 </div>
