@@ -9,6 +9,6 @@ export const ShodanLogo: FC<SVGProps<SVGSVGElement>> = (props) => (
     fill="#4242F1"
     {...props}
   >
-    <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM8 18H6v-2h2v2zm0-4H6v-2h2v2zm0-4H6V8h2v2zm10 8h-8v-2h8v2zm0-4h-8v-2h8v2zm0-4h-8V8h8v2z"/>
+    <path d="M19.4 3H4.6C3.72 3 3 3.72 3 4.6v14.8C3 20.28 3.72 21 4.6 21h14.8c.88 0 1.6-.72 1.6-1.6V4.6c0-.88-.72-1.6-1.6-1.6zM8.5 18H6v-2.5h2.5V18zm0-5.5H6V10h2.5v2.5zm0-5.5H6V4.5h2.5V7zm11 11h-8.5V16h8.5v2.5zm0-5.5h-8.5V10h8.5v2.5zm0-5.5h-8.5V4.5h8.5V7z"/>
   </svg>
 );
