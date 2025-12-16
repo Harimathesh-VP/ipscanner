@@ -9,12 +9,24 @@ import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { format } from 'date-fns';
-import { Download, Search, Upload } from 'lucide-react';
+import { Download, Search, Upload, Trash2 } from 'lucide-react';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
 
 export default function HistoryPage() {
   const [searchQuery, setSearchQuery] = useState('');
+  const [logs, setLogs] = useState<RequestLog[]>(mockRequestLogs);
 
-  const filteredLogs = mockRequestLogs.filter(log =>
+  const filteredLogs = logs.filter(log =>
     log.target.toLowerCase().includes(searchQuery.toLowerCase()) ||
     log.service.toLowerCase().includes(searchQuery.toLowerCase())
   );
@@ -33,6 +45,11 @@ export default function HistoryPage() {
     // This is a mock action. In a real app, you'd handle file selection.
     document.getElementById('import-input')?.click();
   }
+  
+  const handleClearHistory = () => {
+    setLogs([]);
+    // In a real application, you would also clear this from persistent storage.
+  };
 
   return (
     <div className="space-y-6">
@@ -59,6 +76,27 @@ export default function HistoryPage() {
                <input type="file" id="import-input" className="hidden" accept=".json,.csv,.txt" />
                <Button variant="outline" onClick={handleImportClick}><Upload className="mr-2 h-4 w-4" /> Import</Button>
                <Button variant="outline" onClick={handleExport}><Download className="mr-2 h-4 w-4" /> Export</Button>
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button variant="destructive" disabled={logs.length === 0}>
+                      <Trash2 className="mr-2 h-4 w-4" /> Clear History
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        This action cannot be undone. This will permanently delete all request logs.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction onClick={handleClearHistory}>
+                        Yes, delete history
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
             </div>
           </div>
         </CardHeader>
