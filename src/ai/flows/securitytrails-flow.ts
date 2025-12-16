@@ -5,7 +5,7 @@
  * - callSecurityTrails - A function that takes a resource (domain or IP) and returns SecurityTrails data.
  */
 
-import { z } from 'genkit';
+import { z } from 'zod';
 
 const SecurityTrailsInputSchema = z.object({
   resource: z.string().describe('The domain or IP address to query.'),
