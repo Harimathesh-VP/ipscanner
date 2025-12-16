@@ -138,7 +138,7 @@ export function ApiRequester() {
 
   return (
     <Tabs defaultValue={services[0].id} className="w-full">
-      <TabsList className="grid w-full grid-cols-3 md:grid-cols-5 lg:grid-cols-9">
+      <TabsList className="grid h-auto w-full grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-9">
         {services.map((service) => (
           <TabsTrigger key={service.id} value={service.id} className="flex-col h-14 gap-1">
              <service.icon className="h-6 w-6" />
