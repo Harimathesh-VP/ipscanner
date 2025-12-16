@@ -21,7 +21,7 @@ export function LoginForm() {
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    router.replace('/dashboard');
+    router.replace('/home');
   };
 
   return (

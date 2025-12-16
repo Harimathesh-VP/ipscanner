@@ -54,7 +54,7 @@ export default function AppSidebar() {
   return (
     <Sidebar>
       <SidebarHeader>
-        <Link href="/" className="flex items-center gap-2">
+        <Link href="/home" className="flex items-center gap-2">
           <ApiSentinelLogo className="size-7 text-primary" />
           <span className="text-xl font-semibold font-headline">API Sentinel</span>
         </Link>
@@ -136,7 +136,7 @@ export default function AppSidebar() {
             <DropdownMenuItem>Team</DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem asChild>
-              <Link href="/login">
+              <Link href="/">
                 <LogOut className="mr-2 h-4 w-4" />
                 <span>Log out</span>
               </Link>
