@@ -24,7 +24,6 @@ import {
 import { Button } from '../ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../ui/table';
-import { Separator } from '../ui/separator';
 
 type AnalysisResult = {
   category: string;
@@ -63,7 +62,6 @@ type VirusTotalResult = {
       continent?: string;
       last_analysis_results?: Record<string, AnalysisResult>;
       last_analysis_stats?: AnalysisStats;
-      resolutions?: NetworkInfo[];
       subdomains?: NetworkInfo[];
       whois?: WhoisData;
     };
@@ -150,7 +148,7 @@ export function VirusTotalResultViewer({ result }: VirusTotalResultViewerProps) 
         </TabsList>
          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleCopyJson(result)}>
             <Eye className="h-4 w-4" />
-            <span className="sr-only">View Raw JSON</span>
+            <span className="sr-only">Copy Raw JSON</span>
          </Button>
       </div>
 

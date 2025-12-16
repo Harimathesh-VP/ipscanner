@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Copy, Search } from 'lucide-react';
+import { Copy, Search, Eye } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useApiKeys } from '@/context/api-keys-context';
 import { callVirusTotal } from '@/ai/flows/virustotal-flow';
@@ -129,10 +129,18 @@ export function ApiRequester() {
         <TabsContent key={service.id} value={service.id}>
            <Card className="mt-4">
             <CardHeader>
-                <CardTitle className="flex items-center gap-3">
-                    <service.icon className="h-6 w-6 text-muted-foreground" />
-                    {service.name}
-                </CardTitle>
+                <div className="flex items-center justify-between">
+                    <CardTitle className="flex items-center gap-3">
+                        <service.icon className="h-6 w-6 text-muted-foreground" />
+                        {service.name}
+                    </CardTitle>
+                    {results[service.id] && service.id !== 'virustotal' && (
+                        <Button variant="outline" size="sm" onClick={() => handleCopyJson(results[service.id])}>
+                            <Copy className="mr-2 h-4 w-4" />
+                            Copy JSON
+                        </Button>
+                    )}
+                </div>
                 <CardDescription>{service.description}</CardDescription>
             </CardHeader>
             <CardContent>
@@ -170,20 +178,12 @@ export function ApiRequester() {
                     {service.id === 'virustotal' && results[service.id]?.data?.attributes?.last_analysis_results ? (
                         <VirusTotalResultViewer result={results[service.id]} />
                     ) : (
-                        <Card className="bg-muted/50 mt-4">
-                        <CardHeader className="flex-row items-center justify-between py-3 px-4 border-b">
-                            <CardTitle className="text-base font-medium">Raw JSON</CardTitle>
-                            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleCopyJson(results[service.id])}>
-                                <Copy className="h-4 w-4" />
-                                <span className="sr-only">Copy JSON</span>
-                            </Button>
-                        </CardHeader>
-                        <CardContent className="p-0">
-                            <pre className="text-sm font-code overflow-x-auto p-4 max-h-[500px]">
-                            {JSON.stringify(results[service.id], null, 2)}
-                            </pre>
+                       <Card className="bg-muted/50 mt-4">
+                        <CardContent className="p-6 text-center text-muted-foreground">
+                            <p>Response received.</p>
+                            <p className="text-xs">Click the "Copy JSON" button above to view the raw data.</p>
                         </CardContent>
-                        </Card>
+                       </Card>
                     )}
                     </>
                 )}
