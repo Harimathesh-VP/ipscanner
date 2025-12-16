@@ -9,29 +9,38 @@ import { useToast } from '@/hooks/use-toast';
 import { useApiKeys } from '@/context/api-keys-context';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
+import { useState } from 'react';
 
 export default function SettingsPage() {
   const { toast } = useToast();
   const { apiKeys, setApiKey } = useApiKeys();
+  const [errors, setErrors] = useState<Record<string, string | null>>({});
+
+  const validateKey = (key: string): boolean => {
+    return key.length >= 10;
+  }
 
   const handleSaveKey = (serviceId: string, e: React.FormEvent) => {
     e.preventDefault();
     const form = e.target as HTMLFormElement;
     const input = form.elements.namedItem('apiKey') as HTMLInputElement;
-    const key = input.value;
+    const key = input.value.trim();
 
-    if (key) {
+    if (validateKey(key)) {
       setApiKey(serviceId, key);
       toast({
         title: 'API Key Saved',
         description: `Your API key for ${services.find((s) => s.id === serviceId)?.name} has been configured.`,
       });
+      setErrors(prev => ({...prev, [serviceId]: null}));
       input.value = '';
     } else {
+      const errorMessage = 'Please enter a valid API key (at least 10 characters).';
+      setErrors(prev => ({...prev, [serviceId]: errorMessage}));
       toast({
         variant: 'destructive',
-        title: 'Input Required',
-        description: 'Please enter an API key.',
+        title: 'Invalid API Key',
+        description: errorMessage,
       });
     }
   };
@@ -51,7 +60,7 @@ export default function SettingsPage() {
         {unconfiguredServices.length > 0 ? (
           <div className="grid gap-6 md:grid-cols-2">
             {unconfiguredServices.map((service) => (
-              <Card key={service.id}>
+              <Card key={service.id} className={errors[service.id] ? 'border-destructive' : ''}>
                 <form onSubmit={(e) => handleSaveKey(service.id, e)}>
                   <CardHeader className="flex-row gap-4 items-start">
                     <service.icon className="h-10 w-10 text-muted-foreground mt-1" />
@@ -68,6 +77,7 @@ export default function SettingsPage() {
                         <KeyRound className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                         <Input name="apiKey" placeholder="Enter your API key" type="password" className="pl-10" />
                       </div>
+                      {errors[service.id] && <p className="text-xs text-destructive mt-2">{errors[service.id]}</p>}
                   </CardContent>
                    <CardFooter className="flex justify-between bg-muted/50 px-6 py-4 border-t">
                       <Button variant="outline" size="sm" asChild>
@@ -101,7 +111,7 @@ export default function SettingsPage() {
             <h2 className="text-2xl font-semibold tracking-tight font-headline">Configured Services</h2>
              <div className="grid gap-6 md:grid-cols-2">
               {configuredServices.map((service) => (
-                <Card key={service.id} className="border-primary/20 bg-primary/5">
+                <Card key={service.id} className={`border-primary/20 bg-primary/5 ${errors[service.id] ? 'border-destructive' : ''}`}>
                  <form onSubmit={(e) => handleSaveKey(service.id, e)}>
                   <CardHeader className="flex-row gap-4 items-start">
                     <service.icon className="h-10 w-10 text-primary mt-1" />
@@ -123,6 +133,7 @@ export default function SettingsPage() {
                           className="pl-10"
                         />
                       </div>
+                      {errors[service.id] && <p className="text-xs text-destructive mt-2">{errors[service.id]}</p>}
                   </CardContent>
                   <CardFooter className="flex justify-between bg-primary/10 px-6 py-4 border-t border-primary/20">
                      <Button variant="outline" size="sm" asChild>
