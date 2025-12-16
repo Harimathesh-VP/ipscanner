@@ -26,7 +26,7 @@ export async function callSecurityTrails(input: SecurityTrailsInput): Promise<Se
   let isIp = false;
   // Basic check for IP address
   if (/^\d{1,3}(\.\d{1,3}){3}$/.test(resource)) {
-    endpoint = `https://api.securitytrails.com/v1/ip/${resource}/whois`;
+    endpoint = `https://api.securitytrails.com/v1/ip/${resource}`;
     isIp = true;
   } 
   // Assume domain
@@ -61,8 +61,12 @@ export async function callSecurityTrails(input: SecurityTrailsInput): Promise<Se
             data.whois_data = await whoisResponse.json();
         }
     } else {
-        // The IP WHOIS response is the data itself. We wrap it to be consistent.
-        return { whois: data };
+        const whoisResponse = await fetch(`${endpoint}/whois`, {
+            headers: { 'APIKEY': key, 'Accept': 'application/json' },
+        });
+        if (whoisResponse.ok) {
+            data.whois = await whoisResponse.json();
+        }
     }
 
 
