@@ -2,13 +2,13 @@
 
 import { useState } from 'react';
 import type { RequestLog } from '@/lib/types';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { format } from 'date-fns';
-import { Download, Search, Upload, Trash2 } from 'lucide-react';
+import { Download, Search, Upload, Trash2, ChevronDown } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -20,17 +20,26 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { useToast } from '@/hooks/use-toast';
+
 
 export default function HistoryPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [logs, setLogs] = useState<RequestLog[]>([]);
+  const { toast } = useToast();
 
   const filteredLogs = logs.filter(log =>
     log.target.toLowerCase().includes(searchQuery.toLowerCase()) ||
     log.service.toLowerCase().includes(searchQuery.toLowerCase())
   );
   
-  const handleExport = () => {
+  const handleExportJson = () => {
     const jsonString = `data:text/json;charset=utf-8,${encodeURIComponent(
       JSON.stringify(filteredLogs, null, 2)
     )}`;
@@ -39,15 +48,102 @@ export default function HistoryPage() {
     link.download = "api_sentinel_history.json";
     link.click();
   };
+
+  const handleExportCsv = () => {
+    if (filteredLogs.length === 0) return;
+    const headers = Object.keys(filteredLogs[0]).join(',');
+    const rows = filteredLogs.map(log => {
+      // Handle nested response object by stringifying it
+      const responseString = JSON.stringify(log.response).replace(/,/g, ';');
+      const values = [log.id, log.service, log.target, log.date, log.status, `"${responseString}"`];
+      return values.join(',');
+    });
+    const csvString = `data:text/csv;charset=utf-8,${encodeURIComponent([headers, ...rows].join('\n'))}`;
+    const link = document.createElement("a");
+    link.href = csvString;
+    link.download = "api_sentinel_history.csv";
+    link.click();
+  };
   
   const handleImportClick = () => {
-    // This is a mock action. In a real app, you'd handle file selection.
     document.getElementById('import-input')?.click();
   }
+
+  const handleFileImport = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const content = e.target?.result as string;
+        let importedLogs: RequestLog[] = [];
+
+        if (file.name.endsWith('.json')) {
+          importedLogs = JSON.parse(content);
+        } else if (file.name.endsWith('.csv')) {
+            const lines = content.split('\n');
+            const headers = lines[0].split(',');
+            importedLogs = lines.slice(1).map((line, index) => {
+                const values = line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/); // handle commas inside quoted strings
+                const log: any = {};
+                headers.forEach((header, i) => {
+                    const key = header.trim();
+                    let value = values[i] || '';
+                    if (key === 'response') {
+                        value = JSON.parse(value.replace(/^"|"$/g, '').replace(/;/g, ','));
+                    }
+                    log[key] = value;
+                });
+                return log as RequestLog;
+            }).filter(l => l.id); // Filter out empty lines
+        } else if (file.name.endsWith('.txt')) {
+           try {
+             // Try parsing as JSON first
+             importedLogs = JSON.parse(content);
+           } catch(err) {
+             // If not JSON, maybe it's CSV-like content in a txt file
+              const lines = content.split('\n');
+              const headers = lines[0].split(',');
+              if (headers.length < 2) throw new Error("Invalid TXT content, expected JSON or CSV format.");
+              
+              importedLogs = lines.slice(1).map((line) => {
+                  const values = line.split(',');
+                  const log: any = {};
+                  headers.forEach((header, i) => log[header.trim()] = values[i]);
+                  if(log.response) log.response = JSON.parse(log.response);
+                  return log as RequestLog;
+              }).filter(l => l.id);
+           }
+        } else {
+            throw new Error("Unsupported file format. Please use JSON, CSV, or TXT.");
+        }
+
+        // Basic validation
+        if (!Array.isArray(importedLogs) || importedLogs.some(log => !log.id || !log.service || !log.date)) {
+            throw new Error("Invalid log format in the imported file.");
+        }
+
+        setLogs(prevLogs => [...prevLogs, ...importedLogs]);
+        toast({
+          title: "Import Successful",
+          description: `${importedLogs.length} logs have been imported.`,
+        });
+
+      } catch (error: any) {
+        toast({
+          variant: "destructive",
+          title: "Import Failed",
+          description: error.message || "Could not parse the file. Please check its format.",
+        });
+      }
+    };
+    reader.readAsText(file);
+    event.target.value = ''; // Reset input
+  };
   
   const handleClearHistory = () => {
     setLogs([]);
-    // In a real application, you would also clear this from persistent storage.
   };
 
   return (
@@ -55,7 +151,7 @@ export default function HistoryPage() {
       <div>
         <h1 className="text-3xl font-bold tracking-tight font-headline">Request History</h1>
         <p className="text-muted-foreground">
-          Browse and search your past API requests.
+          Browse, search, import, and export your past API requests.
         </p>
       </div>
       <Card>
@@ -72,9 +168,21 @@ export default function HistoryPage() {
                   onChange={(e) => setSearchQuery(e.target.value)}
                 />
               </div>
-               <input type="file" id="import-input" className="hidden" accept=".json,.csv,.txt" />
+               <input type="file" id="import-input" className="hidden" accept=".json,.csv,.txt" onChange={handleFileImport} />
                <Button variant="outline" onClick={handleImportClick}><Upload className="mr-2 h-4 w-4" /> Import</Button>
-               <Button variant="outline" onClick={handleExport}><Download className="mr-2 h-4 w-4" /> Export</Button>
+               
+               <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline">
+                      <Download className="mr-2 h-4 w-4" /> Export <ChevronDown className="ml-2 h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent>
+                    <DropdownMenuItem onClick={handleExportJson}>As JSON</DropdownMenuItem>
+                    <DropdownMenuItem onClick={handleExportCsv}>As CSV</DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+
                 <AlertDialog>
                   <AlertDialogTrigger asChild>
                     <Button variant="destructive" disabled={logs.length === 0}>
@@ -110,7 +218,7 @@ export default function HistoryPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredLogs.map((log) => (
+              {filteredLogs.length > 0 ? filteredLogs.map((log) => (
                 <TableRow key={log.id}>
                   <TableCell className="font-medium">{log.service}</TableCell>
                   <TableCell className="font-code">{log.target}</TableCell>
@@ -122,14 +230,15 @@ export default function HistoryPage() {
                     </Badge>
                   </TableCell>
                 </TableRow>
-              ))}
+              )) : (
+                <TableRow>
+                    <TableCell colSpan={4} className="h-24 text-center">
+                        No logs found.
+                    </TableCell>
+                </TableRow>
+              )}
             </TableBody>
           </Table>
-           {filteredLogs.length === 0 && (
-            <div className="text-center p-8 text-muted-foreground">
-              No logs found.
-            </div>
-           )}
         </CardContent>
       </Card>
     </div>
