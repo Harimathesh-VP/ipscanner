@@ -23,7 +23,7 @@ export async function callAbuseIPDB(input: AbuseIPDBInput): Promise<AbuseIPDBOut
   }
   
   try {
-    const response = await fetch(`https://api.abuseipdb.com/api/v2/check?ipAddress=${ipAddress}&maxAgeInDays=90&verbose=true`, {
+    const response = await fetch(`https://api.abuseipdb.com/api/v2/check?ipAddress=${ipAddress}&maxAgeInDays=90&verbose`, {
       headers: { 'Key': key, 'Accept': 'application/json' },
     });
 
