@@ -9,15 +9,15 @@ import { z } from 'zod';
 
 const ShodanInputSchema = z.object({
   query: z.string().describe('The IP address or search query.'),
-  apiKey: z.string().optional().describe('The Shodan API key.'),
+  apiKeys: z.record(z.string()).optional().describe('The Shodan API key.'),
 });
 export type ShodanInput = z.infer<typeof ShodanInputSchema>;
 
 export type ShodanOutput = any;
 
 export async function callShodan(input: ShodanInput): Promise<ShodanOutput> {
-  const { query, apiKey } = input;
-  const key = apiKey || process.env.SHODAN_API_KEY;
+  const { query, apiKeys } = input;
+  const key = apiKeys?.shodan || process.env.SHODAN_API_KEY;
   if (!key) {
     throw new Error('SHODAN_API_KEY is not provided or configured.');
   }

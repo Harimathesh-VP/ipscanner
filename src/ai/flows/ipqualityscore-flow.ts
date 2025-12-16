@@ -9,15 +9,15 @@ import { z } from 'zod';
 
 const IPQualityScoreInputSchema = z.object({
   ipAddress: z.string().describe('The IP address to query.'),
-  apiKey: z.string().optional().describe('The IPQualityScore API key.'),
+  apiKeys: z.record(z.string()).optional().describe('The IPQualityScore API key.'),
 });
 export type IPQualityScoreInput = z.infer<typeof IPQualityScoreInputSchema>;
 
 export type IPQualityScoreOutput = any;
 
 export async function callIPQualityScore(input: IPQualityScoreInput): Promise<IPQualityScoreOutput> {
-  const { ipAddress, apiKey } = input;
-  const key = apiKey || process.env.IPQUALITYSCORE_API_KEY;
+  const { ipAddress, apiKeys } = input;
+  const key = apiKeys?.ipqualityscore || process.env.IPQUALITYSCORE_API_KEY;
   if (!key) {
     throw new Error('IPQUALITYSCORE_API_KEY is not provided or configured.');
   }

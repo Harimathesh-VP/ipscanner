@@ -9,15 +9,15 @@ import { z } from 'zod';
 
 const AlienVaultInputSchema = z.object({
   resource: z.string().describe('The IP, domain, or hash to query.'),
-  apiKey: z.string().optional().describe('The AlienVault OTX API key.'),
+  apiKeys: z.record(z.string()).optional().describe('The AlienVault OTX API key.'),
 });
 export type AlienVaultInput = z.infer<typeof AlienVaultInputSchema>;
 
 export type AlienVaultOutput = any;
 
 export async function callAlienVault(input: AlienVaultInput): Promise<AlienVaultOutput> {
-  const { resource, apiKey } = input;
-  const key = apiKey || process.env.ALIENVAULT_API_KEY;
+  const { resource, apiKeys } = input;
+  const key = apiKeys?.alienvault || process.env.ALIENVAULT_API_KEY;
   if (!key) {
     throw new Error('ALIENVAULT_API_KEY is not provided or configured.');
   }

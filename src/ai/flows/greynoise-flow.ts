@@ -9,15 +9,15 @@ import { z } from 'zod';
 
 const GreyNoiseInputSchema = z.object({
   ipAddress: z.string().describe('The IP address to query.'),
-  apiKey: z.string().optional().describe('The GreyNoise API key.'),
+  apiKeys: z.record(z.string()).optional().describe('The GreyNoise API key.'),
 });
 export type GreyNoiseInput = z.infer<typeof GreyNoiseInputSchema>;
 
 export type GreyNoiseOutput = any;
 
 export async function callGreyNoise(input: GreyNoiseInput): Promise<GreyNoiseOutput> {
-  const { ipAddress, apiKey } = input;
-  const key = apiKey || process.env.GREYNOISE_API_KEY;
+  const { ipAddress, apiKeys } = input;
+  const key = apiKeys?.greynoise || process.env.GREYNOISE_API_KEY;
   if (!key) {
     throw new Error('GREYNOISE_API_KEY is not provided or configured.');
   }

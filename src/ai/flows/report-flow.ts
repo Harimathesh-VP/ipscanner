@@ -63,12 +63,15 @@ async function getReportData(input: ReportInput) {
             
             let serviceInput: any;
 
+            // Pass all keys to each flow for potential enrichment
+            const inputPayload = { apiKeys };
+
             if (service.inputType === 'ipAddress') {
-               serviceInput = { ipAddress: indicator, apiKey };
+               serviceInput = { ...inputPayload, ipAddress: indicator };
             } else if (service.inputType === 'query') {
-               serviceInput = { query: indicator, apiKey };
+               serviceInput = { ...inputPayload, query: indicator };
             } else {
-               serviceInput = { resource: indicator, apiKey };
+               serviceInput = { ...inputPayload, resource: indicator };
             }
 
             return flow(serviceInput)

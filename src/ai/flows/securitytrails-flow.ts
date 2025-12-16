@@ -9,15 +9,15 @@ import { z } from 'genkit';
 
 const SecurityTrailsInputSchema = z.object({
   resource: z.string().describe('The domain or IP address to query.'),
-  apiKey: z.string().optional().describe('The SecurityTrails API key.'),
+  apiKeys: z.record(z.string()).optional().describe('The SecurityTrails API key.'),
 });
 export type SecurityTrailsInput = z.infer<typeof SecurityTrailsInputSchema>;
 
 export type SecurityTrailsOutput = any;
 
 export async function callSecurityTrails(input: SecurityTrailsInput): Promise<SecurityTrailsOutput> {
-  const { resource, apiKey } = input;
-  const key = apiKey || process.env.SECURITYTRAILS_API_KEY;
+  const { resource, apiKeys } = input;
+  const key = apiKeys?.securitytrails || process.env.SECURITYTRAILS_API_KEY;
   if (!key) {
     throw new Error('SECURITYTRAILS_API_KEY is not provided or configured.');
   }

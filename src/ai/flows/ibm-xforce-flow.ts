@@ -9,14 +9,15 @@ import { z } from 'zod';
 
 const IBMXForceInputSchema = z.object({
   resource: z.string().describe('The IP, URL, or hash to query.'),
-  apiKey: z.string().optional().describe('The IBM X-Force API key.'),
+  apiKeys: z.record(z.string()).optional().describe('The IBM X-Force API key.'),
 });
 export type IBMXForceInput = z.infer<typeof IBMXForceInputSchema>;
 
 export type IBMXForceOutput = any;
 
 export async function callIBMForce(input: IBMXForceInput): Promise<IBMXForceOutput> {
-  const { resource, apiKey } = input;
+  const { resource, apiKeys } = input;
+  const apiKey = apiKeys?.xforce;
   
   if (!apiKey) {
     throw new Error('XFORCE_API_KEY is not provided or configured.');

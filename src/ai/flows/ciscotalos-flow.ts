@@ -9,7 +9,7 @@ import { z } from 'zod';
 
 const CiscoTalosInputSchema = z.object({
   resource: z.string().describe('The IP or domain to query.'),
-  apiKey: z.string().optional().describe('The Cisco Talos API key.'),
+  apiKeys: z.record(z.string()).optional().describe('The Cisco Talos API key.'),
 });
 export type CiscoTalosInput = z.infer<typeof CiscoTalosInputSchema>;
 
@@ -18,7 +18,8 @@ export type CiscoTalosOutput = any;
 // This is a placeholder flow. Cisco Talos does not offer a simple public API
 // like the other services. Full implementation would require a more complex setup.
 export async function callCiscoTalos(input: CiscoTalosInput): Promise<CiscoTalosOutput> {
-    const { resource, apiKey } = input;
+    const { resource, apiKeys } = input;
+    const apiKey = apiKeys?.ciscotalos;
     if (!apiKey) {
       throw new Error('CISCO_TALOS_API_KEY is not provided or configured.');
     }

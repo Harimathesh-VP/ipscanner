@@ -94,12 +94,14 @@ export function ApiRequester() {
     try {
       const service = services.find(s => s.id === serviceId);
       let serviceInput;
+      const inputPayload = { apiKeys };
+
       if (service?.inputType === 'ipAddress') {
-        serviceInput = { ipAddress: inputValue, apiKey };
+        serviceInput = { ...inputPayload, ipAddress: inputValue };
       } else if (service?.inputType === 'query') {
-        serviceInput = { query: inputValue, apiKey };
+        serviceInput = { ...inputPayload, query: inputValue };
       } else {
-        serviceInput = { resource: inputValue, apiKey };
+        serviceInput = { ...inputPayload, resource: inputValue };
       }
 
       const result = await flow(serviceInput);

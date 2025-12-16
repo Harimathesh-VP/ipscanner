@@ -8,15 +8,15 @@ import { z } from 'zod';
 
 const VirusTotalInputSchema = z.object({
   resource: z.string().describe('The domain, IP address, or URL to query.'),
-  apiKey: z.string().optional().describe('The VirusTotal API key.'),
+  apiKeys: z.record(z.string()).optional().describe('The VirusTotal API key.'),
 });
 export type VirusTotalInput = z.infer<typeof VirusTotalInputSchema>;
 
 export type VirusTotalOutput = any;
 
 export async function callVirusTotal(input: VirusTotalInput): Promise<VirusTotalOutput> {
-  const { resource, apiKey } = input;
-  const key = apiKey || process.env.VIRUSTOTAL_API_KEY;
+  const { resource, apiKeys } = input;
+  const key = apiKeys?.virustotal || process.env.VIRUSTOTAL_API_KEY;
   if (!key) {
     throw new Error('VIRUSTOTAL_API_KEY is not provided or configured.');
   }
