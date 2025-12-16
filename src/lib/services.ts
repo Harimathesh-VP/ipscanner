@@ -6,6 +6,7 @@ export const services: Service[] = [
   {
     id: 'virustotal',
     name: 'VirusTotal',
+    alias: 'VT',
     icon: VirusTotalLogo,
     description: 'Reputation and analysis of files, domains, IPs, and URLs, with detailed stats.',
     placeholder: 'Enter a domain, IP, or URL',
@@ -15,6 +16,7 @@ export const services: Service[] = [
   {
     id: 'abuseipdb',
     name: 'AbuseIPDB',
+    alias: 'AIPDB',
     icon: AbuseIPDBLogo,
     description: 'IP abuse confidence score, report counts, and network context. IP addresses only.',
     placeholder: 'Enter an IP address',
@@ -24,6 +26,7 @@ export const services: Service[] = [
   {
     id: 'securitytrails',
     name: 'SecurityTrails',
+    alias: 'ST',
     icon: SecurityTrailsLogo,
     description: 'Primary WHOIS provider with full registrant data, plus DNS and infrastructure intel.',
     placeholder: 'Enter a domain or IP',
@@ -33,6 +36,7 @@ export const services: Service[] = [
   {
     id: 'greynoise',
     name: 'GreyNoise',
+    alias: 'GN',
     icon: GreyNoiseLogo,
     description: 'Internet noise and mass-scan intelligence. Excludes WHOIS. IP addresses only.',
     placeholder: 'Enter an IP address',
@@ -42,6 +46,7 @@ export const services: Service[] = [
   {
     id: 'shodan',
     name: 'Shodan',
+    alias: 'Shodan',
     icon: ShodanLogo,
     description: 'Search for internet-connected devices, open ports, services, and vulnerabilities.',
     placeholder: 'Enter an IP or search query',
@@ -51,6 +56,7 @@ export const services: Service[] = [
   {
     id: 'alienvault',
     name: 'AlienVault OTX',
+    alias: 'OTX',
     icon: AlienVaultLogo,
     description: 'WHOIS data combined with threat pulses, reputation, and passive DNS.',
     placeholder: 'Enter an IP, domain, or hash',

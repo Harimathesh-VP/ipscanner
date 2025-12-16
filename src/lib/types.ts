@@ -3,6 +3,7 @@ import type { FC, SVGProps } from 'react';
 export type Service = {
   id: string;
   name: string;
+  alias?: string;
   icon: FC<SVGProps<SVGSVGElement>>;
   description: string;
   placeholder: string;

@@ -8,6 +8,7 @@ import { KeyRound, CheckCircle, ExternalLink, Info } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useApiKeys } from '@/context/api-keys-context';
 import { Separator } from '@/components/ui/separator';
+import { Badge } from '@/components/ui/badge';
 
 export default function SettingsPage() {
   const { toast } = useToast();
@@ -55,7 +56,10 @@ export default function SettingsPage() {
                   <CardHeader className="flex-row gap-4 items-start">
                     <service.icon className="h-10 w-10 text-muted-foreground mt-1" />
                     <div>
-                        <CardTitle className="text-xl">{service.name}</CardTitle>
+                        <div className="flex items-center gap-2">
+                            <CardTitle className="text-xl">{service.name}</CardTitle>
+                            {service.alias && <Badge variant="outline">{service.alias}</Badge>}
+                        </div>
                         <CardDescription className="mt-1">{service.description}</CardDescription>
                     </div>
                   </CardHeader>
@@ -102,7 +106,10 @@ export default function SettingsPage() {
                   <CardHeader className="flex-row gap-4 items-start">
                     <service.icon className="h-10 w-10 text-primary mt-1" />
                     <div>
-                        <CardTitle className="text-xl text-primary">{service.name}</CardTitle>
+                        <div className="flex items-center gap-2">
+                           <CardTitle className="text-xl text-primary">{service.name}</CardTitle>
+                           {service.alias && <Badge variant="default" className="bg-primary/20 text-primary border-primary/30">{service.alias}</Badge>}
+                        </div>
                         <CardDescription className="mt-1 text-primary/80">API key is configured. You can update it below.</CardDescription>
                     </div>
                   </CardHeader>
