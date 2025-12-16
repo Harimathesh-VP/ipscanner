@@ -50,7 +50,7 @@ type NetworkInfo = {
     id: string;
 }
 
-type WhoisData = Record<string, any>;
+type WhoisData = Record<string, any> | string;
 
 
 type VirusTotalResult = {
@@ -127,11 +127,17 @@ export function VirusTotalResultViewer({ result }: VirusTotalResultViewerProps) 
      )
   };
 
-  const networkInfo = type === 'ip_address' ? attributes?.resolutions : attributes?.subdomains;
-  const hasNetworkInfo = (networkInfo && networkInfo.length > 0) || (type === 'ip_address' && attributes?.asn);
-  const hasWhois = attributes?.whois && Object.keys(attributes.whois).length > 0;
+  const networkInfo = type === 'domain' ? attributes?.subdomains : undefined;
+  const hasNetworkInfo = !!(networkInfo && networkInfo.length > 0) || (type === 'ip_address' && attributes?.asn);
+  const hasWhois = attributes?.whois && (typeof attributes.whois === 'string' || Object.keys(attributes.whois).length > 0);
   
-  const whoisEntries = hasWhois ? Object.entries(attributes.whois || {}) : [];
+  const whoisContent = useMemo(() => {
+    if (!hasWhois) return null;
+    if (typeof attributes.whois === 'string') {
+        return attributes.whois;
+    }
+    return JSON.stringify(attributes.whois, null, 2);
+  }, [attributes?.whois, hasWhois]);
 
 
   return (
@@ -252,16 +258,16 @@ export function VirusTotalResultViewer({ result }: VirusTotalResultViewerProps) 
         {networkInfo && networkInfo.length > 0 && (
             <Card>
                 <CardHeader>
-                    <CardTitle>{type === 'ip_address' ? 'DNS Resolutions' : 'Subdomains'}</CardTitle>
+                    <CardTitle>Subdomains</CardTitle>
                     <CardDescription>
-                        {type === 'ip_address' ? 'Hostnames that have resolved to this IP address.' : 'Subdomains discovered for this domain.'}
+                        Subdomains discovered for this domain.
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
                     <Table>
                         <TableHeader>
                             <TableRow>
-                                <TableHead>{type === 'ip_address' ? 'Hostname' : 'Subdomain'}</TableHead>
+                                <TableHead>Subdomain</TableHead>
                                 <TableHead className="text-right">Last Resolved</TableHead>
                             </TableRow>
                         </TableHeader>
@@ -287,15 +293,10 @@ export function VirusTotalResultViewer({ result }: VirusTotalResultViewerProps) 
                 <CardDescription>Domain registration and contact information.</CardDescription>
             </CardHeader>
             <CardContent>
-                {whoisEntries.length > 0 ? (
-                    <div className="space-y-2 text-sm font-mono">
-                        {whoisEntries.map(([key, value]) => (
-                            <div key={key} className="grid grid-cols-1 md:grid-cols-3 gap-1 md:gap-4 py-2 border-b">
-                                <span className="font-semibold text-muted-foreground capitalize">{key.replace(/_/g, ' ')}</span>
-                                <span className="md:col-span-2 break-words">{String(value)}</span>
-                            </div>
-                        ))}
-                    </div>
+                {whoisContent ? (
+                    <pre className="text-sm font-code overflow-x-auto p-4 bg-muted/50 rounded-md max-h-[600px]">
+                        {whoisContent}
+                    </pre>
                 ) : (
                     <p className="text-muted-foreground text-center py-4">No WHOIS data available.</p>
                 )}
