@@ -12,6 +12,7 @@ import { callSecurityTrails } from './securitytrails-flow';
 import { callGreyNoise } from './greynoise-flow';
 import { callShodan } from './shodan-flow';
 import { callAlienVault } from './alienvault-flow';
+import { callIPQualityScore } from './ipqualityscore-flow';
 import { services } from '@/lib/services';
 
 const ReportInputSchema = z.object({
@@ -39,6 +40,7 @@ const serviceFlows: Record<string, (input: any) => Promise<any>> = {
   greynoise: callGreyNoise,
   shodan: callShodan,
   alienvault: callAlienVault,
+  ipqualityscore: callIPQualityScore,
 };
 
 async function getReportData(input: ReportInput) {

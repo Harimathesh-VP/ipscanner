@@ -5,3 +5,4 @@ export * from './greynoise-logo';
 export * from './shodan-logo';
 export * from './alienvault-logo';
 export * from './api-sentinel-logo';
+export * from './ipqualityscore-logo';

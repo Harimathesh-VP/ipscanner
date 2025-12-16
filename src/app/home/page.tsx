@@ -118,7 +118,7 @@ export default function HomePage() {
                 </p>
               </div>
             </div>
-            <div className="mx-auto mt-12 grid max-w-5xl grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-6 lg:gap-6">
+            <div className="mx-auto mt-12 grid max-w-5xl grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:gap-6">
               {services.map((service) => (
                 <Card key={service.id} className="h-full">
                   <CardContent className="flex flex-col items-center justify-center p-4 sm:p-6 h-full">

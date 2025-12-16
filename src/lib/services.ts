@@ -1,5 +1,5 @@
 import type { FC, SVGProps } from 'react';
-import { VirusTotalLogo, AbuseIPDBLogo, SecurityTrailsLogo, GreyNoiseLogo, ShodanLogo, AlienVaultLogo } from '@/components/logos';
+import { VirusTotalLogo, AbuseIPDBLogo, SecurityTrailsLogo, GreyNoiseLogo, ShodanLogo, AlienVaultLogo, IPQualityScoreLogo } from '@/components/logos';
 import type { Service } from './types';
 
 export const services: Service[] = [
@@ -62,5 +62,15 @@ export const services: Service[] = [
     placeholder: 'Enter an OTX resource (IP, domain, hash)',
     inputType: 'resource',
     documentationUrl: 'https://otx.alienvault.com/api',
+  },
+  {
+    id: 'ipqualityscore',
+    name: 'IPQualityScore',
+    alias: 'IPQS',
+    icon: IPQualityScoreLogo,
+    description: 'Fraud detection, IP scoring, and proxy/VPN detection. IP addresses only.',
+    placeholder: 'Enter an IPQS resource (IP address)',
+    inputType: 'ipAddress',
+    documentationUrl: 'https://www.ipqualityscore.com/documentation/overview',
   },
 ];
