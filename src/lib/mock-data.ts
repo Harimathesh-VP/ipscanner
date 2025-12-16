@@ -1,10 +1,10 @@
 import type { RequestLog } from './types';
 
-// Keeping mockRequestLogs for history page for now.
+// Keeping mockApiResponses for history page for now.
 // API responses are now fetched live.
 export const mockApiResponses: Record<string, any> = {};
 
-export const mockRequestLogs: RequestLog[] = [
+export const mockRequestLogs = (): RequestLog[] => [
   {
     id: '1',
     service: 'VirusTotal',
