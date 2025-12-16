@@ -48,13 +48,16 @@ export async function callVirusTotal(input: VirusTotalInput): Promise<VirusTotal
     }
     const mainData = await mainResponse.json();
 
-    // For IPs and domains, fetch related data like resolutions or subdomains
+    // For IPs and domains, fetch related data
     if (resourceType === 'ip_address') {
         const resolutionsResponse = await fetch(`${url}/resolutions`, { headers: { 'x-apikey': key } });
         if(resolutionsResponse.ok) mainData.data.attributes.resolutions = (await resolutionsResponse.json()).data;
     } else if (resourceType === 'domain') {
         const subdomainsResponse = await fetch(`${url}/subdomains`, { headers: { 'x-apikey': key } });
         if(subdomainsResponse.ok) mainData.data.attributes.subdomains = (await subdomainsResponse.json()).data;
+        
+        const whoisResponse = await fetch(`${url}/whois`, { headers: { 'x-apikey': key } });
+        if(whoisResponse.ok) mainData.data.attributes.whois = (await whoisResponse.json()).data.attributes;
     }
 
     return mainData;
