@@ -4,7 +4,7 @@ import { services } from '@/lib/services';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { KeyRound, CheckCircle, ExternalLink, Info } from 'lucide-react';
+import { KeyRound, CheckCircle, ExternalLink, Info, Eye, EyeOff } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useApiKeys } from '@/context/api-keys-context';
 import { Separator } from '@/components/ui/separator';
@@ -15,6 +15,11 @@ export default function SettingsPage() {
   const { toast } = useToast();
   const { apiKeys, setApiKey } = useApiKeys();
   const [errors, setErrors] = useState<Record<string, string | null>>({});
+  const [showKey, setShowKey] = useState<Record<string, boolean>>({});
+
+  const toggleShowKey = (serviceId: string) => {
+    setShowKey(prev => ({...prev, [serviceId]: !prev[serviceId]}));
+  }
 
   const validateKey = (key: string): boolean => {
     return key.length >= 10;
@@ -92,7 +97,22 @@ export default function SettingsPage() {
                   <CardContent>
                       <div className="relative">
                         <KeyRound className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                        <Input name="apiKey" placeholder="Enter your API key" type="password" className="pl-10" />
+                        <Input 
+                            name="apiKey" 
+                            placeholder="Enter your API key" 
+                            type={showKey[service.id] ? 'text' : 'password'} 
+                            className="pl-10 pr-10"
+                        />
+                        <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            className="absolute right-1 top-1/2 h-7 w-7 -translate-y-1/2 text-muted-foreground"
+                            onClick={() => toggleShowKey(service.id)}
+                        >
+                            {showKey[service.id] ? <EyeOff /> : <Eye />}
+                            <span className="sr-only">Toggle key visibility</span>
+                        </Button>
                       </div>
                       {errors[service.id] && <p className="text-xs text-destructive mt-2">{errors[service.id]}</p>}
                   </CardContent>
@@ -146,12 +166,30 @@ export default function SettingsPage() {
                         <Input
                           name="apiKey"
                           defaultValue={maskApiKey(apiKeys[service.id] || '')}
-                          onFocus={(e) => e.target.value = ''}
-                          onBlur={(e) => { if (!e.target.value) e.target.value = maskApiKey(apiKeys[service.id] || '')}}
+                          onFocus={(e) => {
+                            e.target.value = apiKeys[service.id] || ''
+                            setShowKey(prev => ({...prev, [service.id]: true}))
+                          }}
+                          onBlur={(e) => {
+                            if (!e.target.value) {
+                              e.target.value = maskApiKey(apiKeys[service.id] || '')
+                            }
+                             setShowKey(prev => ({...prev, [service.id]: false}))
+                          }}
                           placeholder="Enter new key to update"
-                          type="password"
-                          className="pl-10"
+                          type={showKey[service.id] ? 'text' : 'password'}
+                          className="pl-10 pr-10"
                         />
+                         <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            className="absolute right-1 top-1/2 h-7 w-7 -translate-y-1/2 text-muted-foreground"
+                            onClick={() => toggleShowKey(service.id)}
+                        >
+                            {showKey[service.id] ? <EyeOff /> : <Eye />}
+                            <span className="sr-only">Toggle key visibility</span>
+                        </Button>
                       </div>
                       {errors[service.id] && <p className="text-xs text-destructive mt-2">{errors[service.id]}</p>}
                   </CardContent>
