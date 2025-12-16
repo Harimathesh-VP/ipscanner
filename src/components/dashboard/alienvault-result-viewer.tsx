@@ -12,7 +12,7 @@ import {
   BookCopy,
   Network,
   Fingerprint,
-  Virus,
+  Bug,
   Link as LinkIcon,
   CircleDotDashed,
 } from 'lucide-react';
@@ -70,7 +70,7 @@ export function AlienVaultResultViewer({ result }: AlienVaultResultViewerProps) 
       <TabsList className="grid grid-cols-5 w-auto">
         <TabsTrigger value="overview"><Fingerprint className="mr-2" /> Overview</TabsTrigger>
         <TabsTrigger value="passive-dns" disabled={!hasPassiveDns}><CircleDotDashed className="mr-2" /> Passive DNS</TabsTrigger>
-        <TabsTrigger value="malware" disabled={!hasMalware}><Virus className="mr-2" /> Malware</TabsTrigger>
+        <TabsTrigger value="malware" disabled={!hasMalware}><Bug className="mr-2" /> Malware</TabsTrigger>
         <TabsTrigger value="urls" disabled={!hasUrlList}><LinkIcon className="mr-2" /> URLs</TabsTrigger>
         <TabsTrigger value="whois" disabled={!hasWhois}><BookCopy className="mr-2" /> WHOIS</TabsTrigger>
       </TabsList>
