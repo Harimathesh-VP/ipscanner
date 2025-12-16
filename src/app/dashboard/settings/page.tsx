@@ -6,14 +6,12 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { KeyRound, CheckCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-
-type ApiKeys = { [key: string]: string };
+import { useApiKeys } from '@/context/api-keys-context';
 
 export default function SettingsPage() {
   const { toast } = useToast();
-  const [apiKeys, setApiKeys] = useState<ApiKeys>({});
+  const { apiKeys, setApiKey } = useApiKeys();
 
   const handleSaveKey = (serviceId: string, e: React.FormEvent) => {
     e.preventDefault();
@@ -22,7 +20,7 @@ export default function SettingsPage() {
     const key = input.value;
 
     if (key) {
-      setApiKeys((prev) => ({ ...prev, [serviceId]: key }));
+      setApiKey(serviceId, key);
       toast({
         title: 'API Key Saved',
         description: `Your API key for ${services.find((s) => s.id === serviceId)?.name} has been configured.`,
@@ -50,7 +48,7 @@ export default function SettingsPage() {
       <Tabs defaultValue="configure">
         <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="configure">Configure New Keys</TabsTrigger>
-          <TabsTrigger value="configured">Configured Keys ({configuredServices.length})</TabsTrigger>
+          <TabsTrigger value="configured">Update Configured Keys ({configuredServices.length})</TabsTrigger>
         </TabsList>
         <TabsContent value="configure">
           {unconfiguredServices.length > 0 ? (

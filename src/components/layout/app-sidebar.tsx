@@ -10,6 +10,9 @@ import {
   SidebarMenuItem,
   SidebarMenuButton,
   SidebarFooter,
+  SidebarSeparator,
+  SidebarGroup,
+  SidebarGroupLabel,
 } from '@/components/ui/sidebar';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
@@ -19,6 +22,7 @@ import {
   LogOut,
   Settings,
   ShieldCheck,
+  CheckCircle,
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -30,6 +34,8 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
+import { useApiKeys } from '@/context/api-keys-context';
+import { services } from '@/lib/services';
 
 const navItems = [
   { href: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
@@ -41,6 +47,9 @@ const navItems = [
 export default function AppSidebar() {
   const pathname = usePathname();
   const userAvatar = PlaceHolderImages.find((p) => p.id === 'user-avatar');
+  const { apiKeys } = useApiKeys();
+
+  const configuredServices = services.filter((service) => apiKeys[service.id]);
 
   return (
     <Sidebar>
@@ -66,6 +75,31 @@ export default function AppSidebar() {
             </SidebarMenuItem>
           ))}
         </SidebarMenu>
+
+        {configuredServices.length > 0 && (
+          <>
+            <SidebarSeparator />
+            <SidebarGroup>
+               <SidebarGroupLabel>Configured Keys</SidebarGroupLabel>
+                 <SidebarMenu>
+                    {configuredServices.map((service) => (
+                      <SidebarMenuItem key={service.id}>
+                        <SidebarMenuButton
+                          variant="ghost"
+                          size="sm"
+                          className="text-muted-foreground"
+                          disabled
+                        >
+                          <CheckCircle className="text-green-500" />
+                          <span>{service.name}</span>
+                        </SidebarMenuButton>
+                      </SidebarMenuItem>
+                    ))}
+                 </SidebarMenu>
+            </SidebarGroup>
+          </>
+        )}
+
       </SidebarContent>
       <SidebarFooter>
         <DropdownMenu>
