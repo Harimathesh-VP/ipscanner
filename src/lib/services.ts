@@ -10,6 +10,7 @@ export const services: Service[] = [
     description: 'Reputation and analysis of files, domains, IPs, and URLs, with detailed stats.',
     placeholder: 'Enter a domain, IP, or URL',
     inputType: 'resource',
+    documentationUrl: 'https://developers.virustotal.com/reference/overview',
   },
   {
     id: 'abuseipdb',
@@ -18,6 +19,7 @@ export const services: Service[] = [
     description: 'IP abuse confidence score, report counts, and network context. IP addresses only.',
     placeholder: 'Enter an IP address',
     inputType: 'ipAddress',
+    documentationUrl: 'https://docs.abuseipdb.com/',
   },
   {
     id: 'securitytrails',
@@ -26,6 +28,7 @@ export const services: Service[] = [
     description: 'Primary WHOIS provider with full registrant data, plus DNS and infrastructure intel.',
     placeholder: 'Enter a domain or IP',
     inputType: 'resource',
+    documentationUrl: 'https://docs.securitytrails.com/docs',
   },
   {
     id: 'greynoise',
@@ -34,6 +37,7 @@ export const services: Service[] = [
     description: 'Internet noise and mass-scan intelligence. Excludes WHOIS. IP addresses only.',
     placeholder: 'Enter an IP address',
     inputType: 'ipAddress',
+    documentationUrl: 'https://docs.greynoise.io/',
   },
   {
     id: 'shodan',
@@ -42,6 +46,7 @@ export const services: Service[] = [
     description: 'Search for internet-connected devices, open ports, services, and vulnerabilities.',
     placeholder: 'Enter an IP or search query',
     inputType: 'query',
+    documentationUrl: 'https://developer.shodan.io/',
   },
   {
     id: 'alienvault',
@@ -50,5 +55,6 @@ export const services: Service[] = [
     description: 'WHOIS data combined with threat pulses, reputation, and passive DNS.',
     placeholder: 'Enter an IP, domain, or hash',
     inputType: 'resource',
+    documentationUrl: 'https://otx.alienvault.com/api',
   },
 ];

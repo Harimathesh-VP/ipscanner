@@ -7,6 +7,7 @@ export type Service = {
   description: string;
   placeholder: string;
   inputType: 'resource' | 'ipAddress' | 'query';
+  documentationUrl: string;
 };
 
 export type RequestLog = {
