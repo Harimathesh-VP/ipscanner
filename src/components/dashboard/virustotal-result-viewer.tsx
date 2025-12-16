@@ -130,6 +130,9 @@ export function VirusTotalResultViewer({ result }: VirusTotalResultViewerProps) 
   const networkInfo = type === 'ip_address' ? attributes?.resolutions : attributes?.subdomains;
   const hasNetworkInfo = (networkInfo && networkInfo.length > 0) || (type === 'ip_address' && attributes?.asn);
   const hasWhois = attributes?.whois && Object.keys(attributes.whois).length > 0;
+  
+  const whoisEntries = hasWhois ? Object.entries(attributes.whois || {}) : [];
+
 
   return (
     <Tabs defaultValue="vendors" className="mt-4">
@@ -284,9 +287,18 @@ export function VirusTotalResultViewer({ result }: VirusTotalResultViewerProps) 
                 <CardDescription>Domain registration and contact information.</CardDescription>
             </CardHeader>
             <CardContent>
-                <pre className="text-sm font-code overflow-x-auto bg-muted p-4 rounded-md">
-                    {JSON.stringify(attributes?.whois, null, 2)}
-                </pre>
+                {whoisEntries.length > 0 ? (
+                    <div className="space-y-2 text-sm font-mono">
+                        {whoisEntries.map(([key, value]) => (
+                            <div key={key} className="grid grid-cols-1 md:grid-cols-3 gap-1 md:gap-4 py-2 border-b">
+                                <span className="font-semibold text-muted-foreground capitalize">{key.replace(/_/g, ' ')}</span>
+                                <span className="md:col-span-2 break-words">{String(value)}</span>
+                            </div>
+                        ))}
+                    </div>
+                ) : (
+                    <p className="text-muted-foreground text-center py-4">No WHOIS data available.</p>
+                )}
             </CardContent>
         </Card>
       </TabsContent>
