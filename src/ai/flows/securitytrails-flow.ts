@@ -23,9 +23,11 @@ export async function callSecurityTrails(input: SecurityTrailsInput): Promise<Se
   }
 
   let endpoint;
+  let isIp = false;
   // Basic check for IP address
   if (/^\d{1,3}(\.\d{1,3}){3}$/.test(resource)) {
-    endpoint = `https://api.securitytrails.com/v1/ip/${resource}`;
+    endpoint = `https://api.securitytrails.com/v1/ip/${resource}/whois`;
+    isIp = true;
   } 
   // Assume domain
   else {
@@ -41,12 +43,14 @@ export async function callSecurityTrails(input: SecurityTrailsInput): Promise<Se
     });
 
     if (!response.ok) {
-      throw new Error(`SecurityTrails API error! status: ${response.status}`);
+       const errorData = await response.json();
+       throw new Error(errorData.message || `SecurityTrails API error! status: ${response.status}`);
     }
     const data = await response.json();
     
-    // Also fetch WHOIS data for domains
-    if (endpoint.includes('/domain/')) {
+    // For IP addresses, the WHOIS data is the direct response.
+    // For domains, we also fetch the separate WHOIS endpoint for more complete data.
+    if (!isIp) {
         const whoisResponse = await fetch(`${endpoint}/whois`, {
              headers: { 
                 'APIKEY': key,
@@ -54,13 +58,17 @@ export async function callSecurityTrails(input: SecurityTrailsInput): Promise<Se
             },
         });
         if (whoisResponse.ok) {
-            data.whois = await whoisResponse.json();
+            data.whois_data = await whoisResponse.json();
         }
+    } else {
+        // The IP WHOIS response is the data itself. We wrap it to be consistent.
+        return { whois: data };
     }
+
 
     return data;
   } catch (err: any) {
     console.error('Error calling SecurityTrails API:', err.message);
-    throw new Error('Failed to fetch data from SecurityTrails.');
+    throw new Error(err.message || 'Failed to fetch data from SecurityTrails.');
   }
 }
