@@ -18,6 +18,16 @@ import { callAlienVault } from '@/ai/flows/alienvault-flow';
 import { callIPQualityScore } from '@/ai/flows/ipqualityscore-flow';
 import { callCiscoTalos } from '@/ai/flows/ciscotalos-flow';
 import { callIBMForce } from '@/ai/flows/ibm-xforce-flow';
+import { callGoogleSafeBrowsing } from '@/ai/flows/googlesafebrowsing-flow';
+import { callAPIVoid } from '@/ai/flows/apivoid-flow';
+import { callWhoisXML } from '@/ai/flows/whoisxml-flow';
+import { callSpamhaus } from '@/ai/flows/spamhaus-flow';
+import { callNeutrinoAPI } from '@/ai/flows/neutrinoapi-flow';
+import { callThreatMiner } from '@/ai/flows/threatminer-flow';
+import { callFraudGuard } from '@/ai/flows/fraudguard-flow';
+import { callZscaler } from '@/ai/flows/zscaler-flow';
+import { callWebroot } from '@/ai/flows/webroot-flow';
+import { callRiskIQ } from '@/ai/flows/riskiq-flow';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '../ui/textarea';
 
@@ -38,6 +48,16 @@ const serviceFlows: Record<string, (input: any) => Promise<any>> = {
   ipqualityscore: callIPQualityScore,
   ciscotalos: callCiscoTalos,
   xforce: callIBMForce,
+  googlesafebrowsing: callGoogleSafeBrowsing,
+  apivoid: callAPIVoid,
+  whoisxml: callWhoisXML,
+  spamhaus: callSpamhaus,
+  neutrino: callNeutrinoAPI,
+  threatminer: callThreatMiner,
+  fraudguard: callFraudGuard,
+  zscaler: callZscaler,
+  webroot: callWebroot,
+  riskiq: callRiskIQ,
 };
 
 const resultViewers: Record<string, React.ComponentType<{ result: any }>> = {
@@ -104,7 +124,7 @@ export function ApiRequester() {
 
     setLoading((prev) => ({ ...prev, [serviceId]: true }));
     setResults((prev) => ({ ...prev, [serviceId]: null }));
-    incrementLookupCount();
+    
 
     let result;
     try {
@@ -124,6 +144,7 @@ export function ApiRequester() {
         ...prev,
         [serviceId]: result,
       }));
+      incrementLookupCount();
       addToHistory({ service: service.name, target: inputValue, status: 'Success', response: result });
     } catch (error: any) {
       console.error(`Error fetching from ${serviceId}:`, error);
@@ -137,6 +158,7 @@ export function ApiRequester() {
         ...prev,
         [serviceId]: errorResult,
       }));
+      incrementLookupCount();
       addToHistory({ service: service.name, target: inputValue, status: 'Failed', response: errorResult });
     } finally {
       setLoading((prev) => ({ ...prev, [serviceId]: false }));
@@ -154,7 +176,7 @@ export function ApiRequester() {
 
   return (
     <Tabs defaultValue={services[0].id} className="w-full">
-      <TabsList className="grid h-auto w-full grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-9">
+      <TabsList className="grid h-auto w-full grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-10">
         {services.map((service) => (
           <TabsTrigger key={service.id} value={service.id} className="flex-col h-14 gap-1">
              <service.icon className="h-6 w-6" />
