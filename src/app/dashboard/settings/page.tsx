@@ -4,7 +4,7 @@ import { services } from '@/lib/services';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { KeyRound, CheckCircle, ExternalLink, Info, Eye, EyeOff, Copy, Pencil, Trash2, Power } from 'lucide-react';
+import { KeyRound, CheckCircle, ExternalLink, Info, Eye, EyeOff, Copy, Pencil, Trash2, Power, Zap } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useApiKeys } from '@/context/api-keys-context';
 import { Separator } from '@/components/ui/separator';
@@ -21,12 +21,14 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
+import { serviceFlows } from '@/components/dashboard/api-requester';
 
 export default function SettingsPage() {
   const { toast } = useToast();
   const { apiKeys, setApiKey, removeApiKey } = useApiKeys();
   const [errors, setErrors] = useState<Record<string, string | null>>({});
   const [showKey, setShowKey] = useState<Record<string, boolean>>({});
+  const [testing, setTesting] = useState<Record<string, boolean>>({});
 
   const toggleShowKey = (serviceId: string) => {
     setShowKey(prev => ({...prev, [serviceId]: !prev[serviceId]}));
@@ -52,22 +54,73 @@ export default function SettingsPage() {
     });
   }
 
-  const handleTestKey = (serviceId: string) => {
-    // This is a placeholder. In a real app, you would make a lightweight API call.
+  const handleTestKey = async (serviceId: string) => {
+    const service = services.find((s) => s.id === serviceId);
     const key = apiKeys[serviceId];
-    if (key) {
-      toast({
-        title: 'Testing Key...',
-        description: `Sending test request for ${services.find((s) => s.id === serviceId)?.name}.`,
-      });
-      // Simulate API call
-      setTimeout(() => {
-        toast({
-          title: 'Test Successful',
-          description: `The API key is valid.`,
-        });
-      }, 1500);
+    const flow = serviceFlows[serviceId];
+
+    if (!service || !key || !flow) {
+      toast({ variant: 'destructive', title: 'Test Failed', description: 'Service configuration is missing.' });
+      return;
     }
+    
+    setTesting(prev => ({...prev, [serviceId]: true}));
+    toast({
+      title: `Testing ${service.name}...`,
+      description: 'Sending a lightweight test request.',
+    });
+    
+    try {
+      // Use a common, low-cost query for testing
+      let testInput: any;
+      const testResource = service.inputType === 'ipAddress' ? '8.8.8.8' : service.id === 'shodan' ? 'port:443' : 'google.com';
+
+      if (service.inputType === 'ipAddress') {
+        testInput = { ipAddress: testResource, apiKeys: { [serviceId]: key }};
+      } else if (service.inputType === 'query') {
+        testInput = { query: testResource, apiKeys: { [serviceId]: key }};
+      } else {
+        testInput = { resource: testResource, apiKeys: { [serviceId]: key }};
+      }
+      
+      const result = await flow(testInput);
+
+      if (result.error || result.success === false) {
+         throw new Error(result.error || result.message || 'The API key is invalid or the request failed.');
+      }
+      
+      toast({
+        title: 'Test Successful',
+        description: `The API key for ${service.name} is valid.`,
+        className: 'bg-green-100 dark:bg-green-900 border-green-300 dark:border-green-700',
+      });
+
+    } catch (error: any) {
+        toast({
+          variant: 'destructive',
+          title: 'Test Failed',
+          description: error.message || `The API key for ${service.name} appears to be invalid.`,
+        });
+    } finally {
+        setTesting(prev => ({...prev, [serviceId]: false}));
+    }
+  }
+
+  const handleTestAllKeys = async () => {
+    const configuredServices = services.filter((service) => apiKeys[service.id]);
+    toast({
+      title: 'Testing All Keys',
+      description: `Starting validation for ${configuredServices.length} configured keys.`,
+    });
+    
+    for (const service of configuredServices) {
+       await handleTestKey(service.id);
+    }
+
+    toast({
+      title: 'All Tests Complete',
+      description: 'Finished validating all configured API keys.',
+    });
   }
 
 
@@ -76,37 +129,30 @@ export default function SettingsPage() {
     const form = e.target as HTMLFormElement;
     const input = form.elements.namedItem('apiKey') as HTMLInputElement;
     const key = input.value.trim();
+    const service = services.find((s) => s.id === serviceId);
+    if (!service) return;
 
-    // If key is empty and it's an update, we don't do anything
-    if (!key && apiKeys[serviceId]) {
-      toast({
-        variant: 'default',
-        title: 'No Change',
-        description: `API key for ${services.find((s) => s.id === serviceId)?.name} was not updated.`,
-      });
-      return;
-    }
-    
     if (!key) {
+      if (apiKeys[serviceId]) {
         removeApiKey(serviceId);
         toast({
           title: 'API Key Removed',
-          description: `Your API key for ${services.find((s) => s.id === serviceId)?.name} has been removed.`,
+          description: `Your API key for ${service.name} has been removed.`,
         });
-        return;
+      }
+      return;
     }
 
     if (validateKey(key)) {
       setApiKey(serviceId, key);
       toast({
         title: 'API Key Saved',
-        description: `Your API key for ${services.find((s) => s.id === serviceId)?.name} has been configured.`,
+        description: `Your API key for ${service.name} has been configured.`,
       });
       setErrors(prev => ({...prev, [serviceId]: null}));
-      // We don't clear the input on successful save for configured services, just blur it.
-      if (!apiKeys[serviceId]) {
-          input.value = '';
-      }
+      
+      // Test the key right after saving it
+      handleTestKey(serviceId);
     } else {
       const errorMessage = 'Please enter a valid API key (at least 10 characters).';
       setErrors(prev => ({...prev, [serviceId]: errorMessage}));
@@ -151,7 +197,7 @@ export default function SettingsPage() {
                         <Input 
                             name="apiKey" 
                             placeholder="Enter your API key" 
-                            type={showKey[service.id] ? 'text' : 'password'} 
+                            type="password"
                             className="pl-10"
                         />
                       </div>
@@ -163,7 +209,7 @@ export default function SettingsPage() {
                            <ExternalLink className="mr-2 h-4 w-4" /> API Docs
                          </a>
                       </Button>
-                      <Button type="submit" size="sm">Save Key</Button>
+                      <Button type="submit" size="sm">Save & Test Key</Button>
                    </CardFooter>
                 </form>
               </Card>
@@ -186,7 +232,12 @@ export default function SettingsPage() {
          <>
           <Separator />
           <div className="space-y-6">
-            <h2 className="text-2xl font-semibold tracking-tight font-headline">Configured Services</h2>
+            <div className="flex items-center justify-between">
+              <h2 className="text-2xl font-semibold tracking-tight font-headline">Configured Services</h2>
+              <Button variant="outline" onClick={handleTestAllKeys} disabled={Object.values(testing).some(t => t)}>
+                  <Zap className="mr-2 h-4 w-4" /> Test All Keys
+              </Button>
+            </div>
              <div className="grid gap-6 md:grid-cols-2">
               {configuredServices.map((service) => (
                 <Card key={service.id} className={`border-primary/20 bg-primary/5 ${errors[service.id] ? 'border-destructive' : ''}`}>
@@ -212,9 +263,7 @@ export default function SettingsPage() {
                             e.target.value = apiKeys[service.id] || ''
                           }}
                           onBlur={(e) => {
-                            if (!e.target.value) {
                               e.target.value = maskApiKey(apiKeys[service.id] || '')
-                            }
                           }}
                           placeholder="Enter new key to update"
                           type={showKey[service.id] ? 'text' : 'password'}
@@ -249,7 +298,7 @@ export default function SettingsPage() {
                             </AlertDialogHeader>
                             <AlertDialogFooter>
                               <AlertDialogCancel>Cancel</AlertDialogCancel>
-                              <AlertDialogAction onClick={() => removeApiKey(service.id)}>
+                              <AlertDialogAction onClick={() => handleSaveKey(service.id, { preventDefault: () => {}, target: { elements: { namedItem: () => ({ value: '' })}}} as any)}>
                                 Yes, Delete Key
                               </AlertDialogAction>
                             </AlertDialogFooter>
@@ -258,9 +307,8 @@ export default function SettingsPage() {
 
                      </div>
                      <div className="flex items-center gap-2">
-                        <Button type="button" variant="outline" size="sm" onClick={() => handleTestKey(service.id)}>
-                          <Power className="mr-2 h-4 w-4" />
-                          Test
+                        <Button type="button" variant="outline" size="sm" onClick={() => handleTestKey(service.id)} disabled={testing[service.id]}>
+                          {testing[service.id] ? "Testing..." : <><Power className="mr-2 h-4 w-4" />Test</>}
                         </Button>
                         <Button type="submit" variant="outline" size="sm">Update Key</Button>
                      </div>

@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Copy, Search } from 'lucide-react';
+import { Copy, Search, Zap } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useApiKeys } from '@/context/api-keys-context';
 import { callVirusTotal } from '@/ai/flows/virustotal-flow';
@@ -38,7 +38,7 @@ const AlienVaultResultViewer = React.lazy(() => import('./alienvault-result-view
 const IPQualityScoreResultViewer = React.lazy(() => import('./ipqualityscore-result-viewer').then(module => ({ default: module.IPQualityScoreResultViewer })));
 
 
-const serviceFlows: Record<string, (input: any) => Promise<any>> = {
+export const serviceFlows: Record<string, (input: any) => Promise<any>> = {
   virustotal: callVirusTotal,
   abuseipdb: callAbuseIPDB,
   securitytrails: callSecurityTrails,
