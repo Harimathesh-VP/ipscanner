@@ -9,10 +9,8 @@ import Link from 'next/link';
 
 export default function ProviderInfoPage() {
 
-    const getPricingBadge = (pricing: 'Freemium' | 'Paid' | 'Free') => {
+    const getPricingBadge = (pricing: 'Paid' | 'Free') => {
         switch (pricing) {
-            case 'Freemium':
-                return <Badge variant="secondary" className="border-blue-500/30 bg-blue-500/10 text-blue-700">Freemium</Badge>
             case 'Paid':
                 return <Badge variant="secondary" className="border-yellow-500/30 bg-yellow-500/10 text-yellow-700">Paid</Badge>
             case 'Free':

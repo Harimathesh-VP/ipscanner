@@ -13,7 +13,7 @@ export const services: Service[] = [
     placeholder: 'Enter a VT resource (domain, IP, URL)',
     inputType: 'resource',
     documentationUrl: 'https://developers.virustotal.com/reference/overview',
-    pricing: 'Freemium',
+    pricing: 'Free',
     requestLimit: 500,
   },
   {
@@ -25,7 +25,7 @@ export const services: Service[] = [
     placeholder: 'Enter an AIPDB resource (IP address)',
     inputType: 'ipAddress',
     documentationUrl: 'https://docs.abuseipdb.com/',
-    pricing: 'Freemium',
+    pricing: 'Free',
     requestLimit: 1000,
   },
   {
@@ -37,7 +37,7 @@ export const services: Service[] = [
     placeholder: 'Enter an ST resource (domain or IP)',
     inputType: 'resource',
     documentationUrl: 'https://docs.securitytrails.com/docs',
-    pricing: 'Freemium',
+    pricing: 'Free',
     requestLimit: 50,
   },
   {
@@ -49,7 +49,7 @@ export const services: Service[] = [
     placeholder: 'Enter a GN resource (IP address)',
     inputType: 'ipAddress',
     documentationUrl: 'https://docs.greynoise.io/',
-    pricing: 'Freemium',
+    pricing: 'Free',
     requestLimit: 50,
   },
   {
@@ -61,7 +61,7 @@ export const services: Service[] = [
     placeholder: 'Enter a Shodan resource (IP or query)',
     inputType: 'query',
     documentationUrl: 'https://developer.shodan.io/',
-    pricing: 'Freemium',
+    pricing: 'Free',
     requestLimit: 100,
   },
   {
@@ -85,7 +85,7 @@ export const services: Service[] = [
     placeholder: 'Enter an IPQS resource (IP address)',
     inputType: 'ipAddress',
     documentationUrl: 'https://www.ipqualityscore.com/documentation/overview',
-    pricing: 'Freemium',
+    pricing: 'Free',
     requestLimit: 5000,
   },
   {
@@ -109,7 +109,7 @@ export const services: Service[] = [
     placeholder: 'Enter an X-Force resource (IP, URL, hash)',
     inputType: 'resource',
     documentationUrl: 'https://api.xforce.ibmcloud.com/docs/',
-    pricing: 'Freemium',
+    pricing: 'Free',
     requestLimit: 5000,
   },
   {
@@ -133,7 +133,7 @@ export const services: Service[] = [
     placeholder: 'Enter an IP, domain, or URL',
     inputType: 'resource',
     documentationUrl: 'https://www.apivoid.com/api/',
-    pricing: 'Freemium',
+    pricing: 'Free',
     requestLimit: 100,
   },
   {
@@ -145,7 +145,7 @@ export const services: Service[] = [
     placeholder: 'Enter a domain, IP, or ASN',
     inputType: 'resource',
     documentationUrl: 'https://www.whoisxmlapi.com/documentation/',
-    pricing: 'Freemium',
+    pricing: 'Free',
     requestLimit: 500,
   },
   {
@@ -169,7 +169,7 @@ export const services: Service[] = [
     placeholder: 'Enter an IP address',
     inputType: 'ipAddress',
     documentationUrl: 'https://www.neutrinoapi.com/api/ip-probe/',
-    pricing: 'Freemium',
+    pricing: 'Free',
     requestLimit: 25,
   },
   {
@@ -229,7 +229,7 @@ export const services: Service[] = [
     placeholder: 'Enter an IP, domain, or ASN',
     inputType: 'resource',
     documentationUrl: 'https://community.riskiq.com/docs',
-    pricing: 'Freemium',
+    pricing: 'Free',
     requestLimit: 15,
   },
 ];

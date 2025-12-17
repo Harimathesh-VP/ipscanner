@@ -9,7 +9,7 @@ export type Service = {
   placeholder: string;
   inputType: 'resource' | 'ipAddress' | 'query';
   documentationUrl: string;
-  pricing: 'Freemium' | 'Paid' | 'Free';
+  pricing: 'Paid' | 'Free';
   requestLimit: number | null;
 };
 
