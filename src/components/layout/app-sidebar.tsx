@@ -36,6 +36,7 @@ import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { useApiKeys } from '@/context/api-keys-context';
 import { services } from '@/lib/services';
 import { ApiSentinelLogo } from '@/components/logos/api-sentinel-logo';
+import { ThemeToggle } from './theme-toggle';
 
 const navItems = [
   { href: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
@@ -132,7 +133,7 @@ export default function AppSidebar() {
             <DropdownMenuSeparator />
             <DropdownMenuItem>Profile</DropdownMenuItem>
             <DropdownMenuItem>Billing</DropdownMenuItem>
-            <DropdownMenuItem>Team</DropdownMenuItem>
+            <ThemeToggle />
             <DropdownMenuSeparator />
             <DropdownMenuItem asChild>
               <Link href="/">
