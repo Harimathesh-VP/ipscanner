@@ -18,10 +18,10 @@ export default function HomePage() {
           </Link>
           <nav className="ml-auto flex items-center gap-4">
             <Button variant="outline" asChild>
-              <Link href="/">Sign In</Link>
+              <Link href="/login">Sign In</Link>
             </Button>
             <Button asChild>
-              <Link href="/">Sign Up</Link>
+              <Link href="/login">Sign Up</Link>
             </Button>
           </nav>
         </div>
