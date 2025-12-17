@@ -21,7 +21,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
-import { serviceFlows } from '@/components/dashboard/api-requester';
+import { serviceFlows } from '@/lib/service-flows';
 
 export default function SettingsPage() {
   const { toast } = useToast();

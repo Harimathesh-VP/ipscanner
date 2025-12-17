@@ -2,6 +2,7 @@
 
 import React, { useState, Suspense } from 'react';
 import { services } from '@/lib/services';
+import { serviceFlows } from '@/lib/service-flows';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -9,25 +10,6 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Copy, Search, Zap } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useApiKeys } from '@/context/api-keys-context';
-import { callVirusTotal } from '@/ai/flows/virustotal-flow';
-import { callAbuseIPDB } from '@/ai/flows/abuseipdb-flow';
-import { callSecurityTrails } from '@/ai/flows/securitytrails-flow';
-import { callGreyNoise } from '@/ai/flows/greynoise-flow';
-import { callShodan } from '@/ai/flows/shodan-flow';
-import { callAlienVault } from '@/ai/flows/alienvault-flow';
-import { callIPQualityScore } from '@/ai/flows/ipqualityscore-flow';
-import { callCiscoTalos } from '@/ai/flows/ciscotalos-flow';
-import { callIBMForce } from '@/ai/flows/ibm-xforce-flow';
-import { callGoogleSafeBrowsing } from '@/ai/flows/googlesafebrowsing-flow';
-import { callAPIVoid } from '@/ai/flows/apivoid-flow';
-import { callWhoisXML } from '@/ai/flows/whoisxml-flow';
-import { callSpamhaus } from '@/ai/flows/spamhaus-flow';
-import { callNeutrinoAPI } from '@/ai/flows/neutrinoapi-flow';
-import { callThreatMiner } from '@/ai/flows/threatminer-flow';
-import { callFraudGuard } from '@/ai/flows/fraudguard-flow';
-import { callZscaler } from '@/ai/flows/zscaler-flow';
-import { callWebroot } from '@/ai/flows/webroot-flow';
-import { callRiskIQ } from '@/ai/flows/riskiq-flow';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '../ui/textarea';
 
@@ -37,28 +19,6 @@ const GreyNoiseResultViewer = React.lazy(() => import('./greynoise-result-viewer
 const AlienVaultResultViewer = React.lazy(() => import('./alienvault-result-viewer').then(module => ({ default: module.AlienVaultResultViewer })));
 const IPQualityScoreResultViewer = React.lazy(() => import('./ipqualityscore-result-viewer').then(module => ({ default: module.IPQualityScoreResultViewer })));
 
-
-export const serviceFlows: Record<string, (input: any) => Promise<any>> = {
-  virustotal: callVirusTotal,
-  abuseipdb: callAbuseIPDB,
-  securitytrails: callSecurityTrails,
-  greynoise: callGreyNoise,
-  shodan: callShodan,
-  alienvault: callAlienVault,
-  ipqualityscore: callIPQualityScore,
-  ciscotalos: callCiscoTalos,
-  xforce: callIBMForce,
-  googlesafebrowsing: callGoogleSafeBrowsing,
-  apivoid: callAPIVoid,
-  whoisxml: callWhoisXML,
-  spamhaus: callSpamhaus,
-  neutrino: callNeutrinoAPI,
-  threatminer: callThreatMiner,
-  fraudguard: callFraudGuard,
-  zscaler: callZscaler,
-  webroot: callWebroot,
-  riskiq: callRiskIQ,
-};
 
 const resultViewers: Record<string, React.ComponentType<{ result: any }>> = {
     virustotal: VirusTotalResultViewer,
