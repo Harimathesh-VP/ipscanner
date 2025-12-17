@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { services } from '@/lib/services';
 import { ArrowRight, Check } from 'lucide-react';
-import { ApiSentinelLogo } from '@/components/logos/api-sentinel-logo';
+import { ZeroSharkLogo } from '@/components/logos/zeroshark-logo';
 
 export default function HomePage() {
   return (
@@ -13,8 +13,8 @@ export default function HomePage() {
       <header className="sticky top-0 z-50 w-full">
         <div className="container mx-auto flex h-20 items-center px-4 md:px-6">
           <Link href="/dashboard" className="flex items-center gap-2 font-semibold" prefetch={false}>
-            <ApiSentinelLogo className="h-8 w-8 text-primary" />
-            <span className="text-xl font-bold font-headline text-primary">API Sentinel</span>
+            <ZeroSharkLogo className="h-8 w-8 text-primary" />
+            <span className="text-xl font-bold font-headline text-primary">ZeroShark</span>
           </Link>
           <nav className="ml-auto flex items-center gap-2 sm:gap-4">
             <Button variant="ghost" asChild>
@@ -43,7 +43,7 @@ export default function HomePage() {
                   Unified Threat Intelligence
                 </h1>
                 <p className="max-w-[700px] mx-auto text-muted-foreground md:text-xl">
-                  API Sentinel is your central hub for querying top-tier security APIs. Aggregate data, generate reports, and streamline your threat analysis workflow.
+                  ZeroShark is your central hub for querying top-tier security APIs. Aggregate data, generate reports, and streamline your threat analysis workflow.
                 </p>
               </div>
               <div className="flex flex-col gap-2 min-[400px]:flex-row justify-center">
@@ -71,14 +71,14 @@ export default function HomePage() {
                   <h2 className="text-3xl font-bold tracking-tighter font-headline sm:text-4xl md:text-5xl">Our Mission: Simplify Security</h2>
                 </div>
                 <p className="text-muted-foreground md:text-lg/relaxed">
-                  In a world with countless security tools, threat intelligence can become fragmented and overwhelming. API Sentinel was built to solve this problem. Our mission is to provide a single, powerful interface for security professionals and developers to query, aggregate, and analyze data from the industry's best threat intelligence sources.
+                  In a world with countless security tools, threat intelligence can become fragmented and overwhelming. ZeroShark was built to solve this problem. Our mission is to provide a single, powerful interface for security professionals and developers to query, aggregate, and analyze data from the industry's best threat intelligence sources.
                 </p>
                 <p className="text-muted-foreground md:text-lg/relaxed">
                   We believe that by centralizing access and streamlining workflows, we can empower teams to make faster, more informed decisions, and ultimately build a more secure digital world.
                 </p>
               </div>
               <div className="flex items-center justify-center">
-                  <ApiSentinelLogo className="h-48 w-48 text-primary/10" strokeWidth={1} />
+                  <ZeroSharkLogo className="h-48 w-48 text-primary/10" strokeWidth={1} />
               </div>
             </div>
           </div>
@@ -95,7 +95,7 @@ export default function HomePage() {
                 </p>
               </div>
             </div>
-            <div className="mx-auto grid max-w-5xl items-center justify-center gap-8 sm:grid-cols-2 md:gap-12 lg:max-w-none lg:grid-cols-3 mt-12">
+            <div className="mx-auto grid max-w-5xl items-start justify-center gap-8 sm:grid-cols-2 md:gap-12 lg:max-w-none lg:grid-cols-3 mt-12">
               <div className="flex flex-col items-center text-center gap-2">
                 <h3 className="text-lg font-bold flex items-center gap-2"><Check className="text-primary"/>Multi-Service Queries</h3>
                 <p className="text-sm text-muted-foreground max-w-xs">
@@ -167,7 +167,7 @@ export default function HomePage() {
       </main>
 
       <footer className="flex flex-col gap-2 sm:flex-row py-6 w-full shrink-0 items-center px-4 md:px-6 border-t">
-        <p className="text-xs text-muted-foreground">&copy; {new Date().getFullYear()} API Sentinel. All rights reserved.</p>
+        <p className="text-xs text-muted-foreground">&copy; {new Date().getFullYear()} ZeroShark. All rights reserved.</p>
         <nav className="sm:ml-auto flex gap-4 sm:gap-6">
           <Link href="#" className="text-xs hover:underline underline-offset-4" prefetch={false}>
             Terms of Service

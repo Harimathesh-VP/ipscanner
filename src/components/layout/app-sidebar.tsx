@@ -35,7 +35,7 @@ import { Button } from '@/components/ui/button';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { useApiKeys } from '@/context/api-keys-context';
 import { services } from '@/lib/services';
-import { ApiSentinelLogo } from '@/components/logos/api-sentinel-logo';
+import { ZeroSharkLogo } from '@/components/logos/zeroshark-logo';
 
 const navItems = [
   { href: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
@@ -54,8 +54,8 @@ export default function AppSidebar() {
     <Sidebar>
       <SidebarHeader>
         <Link href="/home" className="flex items-center gap-2">
-          <ApiSentinelLogo className="size-7 text-primary" />
-          <span className="text-xl font-semibold font-headline">API Sentinel</span>
+          <ZeroSharkLogo className="size-7 text-primary" />
+          <span className="text-xl font-semibold font-headline">ZeroShark</span>
         </Link>
       </SidebarHeader>
       <SidebarContent className="p-2">

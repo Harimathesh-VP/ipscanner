@@ -4,7 +4,7 @@ export * from './securitytrails-logo';
 export * from './greynoise-logo';
 export * from './shodan-logo';
 export * from './alienvault-logo';
-export * from './api-sentinel-logo';
+export * from './zeroshark-logo';
 export * from './ipqualityscore-logo';
 export * from './ciscotalos-logo';
 export * from './ibm-xforce-logo';
