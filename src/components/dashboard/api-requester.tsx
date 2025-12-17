@@ -14,7 +14,7 @@ import { callAbuseIPDB } from '@/ai/flows/abuseipdb-flow';
 import { callSecurityTrails } from '@/ai/flows/securitytrails-flow';
 import { callGreyNoise } from '@/ai/flows/greynoise-flow';
 import { callShodan } from '@/ai/flows/shodan-flow';
-import { callAlienVault } from '@/ai/flows/alienvault-flow';
+import { callAlienVault } from '@/aiflows/alienvault-flow';
 import { callIPQualityScore } from '@/ai/flows/ipqualityscore-flow';
 import { callCiscoTalos } from '@/ai/flows/ciscotalos-flow';
 import { callIBMForce } from '@/ai/flows/ibm-xforce-flow';
@@ -67,6 +67,12 @@ const resultViewers: Record<string, React.ComponentType<{ result: any }>> = {
     alienvault: AlienVaultResultViewer,
     ipqualityscore: IPQualityScoreResultViewer,
 };
+
+const serviceCategories = {
+    "Reputation & Risk Scoring": ['virustotal', 'abuseipdb', 'ipqualityscore', 'ciscotalos', 'webroot', 'zscaler', 'spamhaus'],
+    "Threat & OSINT Analysis": ['alienvault', 'xforce', 'greynoise', 'threatminer', 'googlesafebrowsing', 'apivoid'],
+    "Network & Infrastructure": ['securitytrails', 'shodan', 'whoisxml', 'neutrino', 'fraudguard', 'riskiq'],
+}
 
 export function ApiRequester() {
   const [inputValues, setInputValues] = useState<Record<string, string>>({});
@@ -176,14 +182,21 @@ export function ApiRequester() {
 
   return (
     <Tabs defaultValue={services[0].id} className="w-full">
-      <TabsList className="grid h-auto w-full grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-10">
-        {services.map((service) => (
-          <TabsTrigger key={service.id} value={service.id} className="flex-col h-14 gap-2">
-             <service.icon className="h-6 w-6" />
-             <span className="text-xs">{service.name}</span>
-          </TabsTrigger>
+      <div className="space-y-4">
+        {Object.entries(serviceCategories).map(([category, serviceIds]) => (
+            <div key={category}>
+                <p className="text-sm text-muted-foreground font-semibold mb-2 px-1">{category}</p>
+                <TabsList className="grid h-auto w-full grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-10">
+                    {serviceIds.map(id => services.find(s => s.id === id)).filter(Boolean).map((service) => (
+                      <TabsTrigger key={service!.id} value={service!.id} className="flex-col h-14 gap-1">
+                         <service!.icon className="h-6 w-6" />
+                         <span className="text-xs">{service!.name}</span>
+                      </TabsTrigger>
+                    ))}
+                </TabsList>
+            </div>
         ))}
-      </TabsList>
+      </div>
       {services.map((service) => (
         <TabsContent key={service.id} value={service.id}>
            <Card className="mt-4">
