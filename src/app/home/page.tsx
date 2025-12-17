@@ -24,7 +24,7 @@ export default function HomePage() {
               <Link href="#features">Features</Link>
             </Button>
              <Button variant="ghost" asChild>
-              <Link href="#">Pricing</Link>
+              <Link href="#integrations">Integrations</Link>
             </Button>
             <Button variant="default" asChild>
               <Link href="/login">Get Started</Link>
@@ -95,7 +95,7 @@ export default function HomePage() {
                 </p>
               </div>
             </div>
-            <div className="mx-auto grid max-w-5xl items-start gap-8 sm:grid-cols-2 md:gap-12 lg:max-w-none lg:grid-cols-3 mt-12">
+            <div className="mx-auto grid max-w-5xl items-center justify-center gap-8 sm:grid-cols-2 md:gap-12 lg:max-w-none lg:grid-cols-3 mt-12">
               <div className="flex flex-col items-center text-center gap-2">
                 <h3 className="text-lg font-bold flex items-center gap-2"><Check className="text-primary"/>Multi-Service Queries</h3>
                 <p className="text-sm text-muted-foreground max-w-xs">
