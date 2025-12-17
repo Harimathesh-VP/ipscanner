@@ -51,16 +51,49 @@ export default function HistoryPage() {
     link.click();
   };
 
+  const flattenObject = (obj: any, parentKey = '', res: Record<string, any> = {}): Record<string, any> => {
+    for (const key in obj) {
+        if (Object.prototype.hasOwnProperty.call(obj, key)) {
+            const propName = parentKey ? `${parentKey}.${key}` : key;
+            if (typeof obj[key] === 'object' && obj[key] !== null && !Array.isArray(obj[key])) {
+                flattenObject(obj[key], propName, res);
+            } else if (Array.isArray(obj[key])) {
+                res[propName] = JSON.stringify(obj[key]);
+            }
+            else {
+                res[propName] = obj[key];
+            }
+        }
+    }
+    return res;
+  }
+
   const handleExportCsv = () => {
     if (filteredLogs.length === 0) return;
-    const headers = Object.keys(filteredLogs[0]).join(',');
-    const rows = filteredLogs.map(log => {
-      // Handle nested response object by stringifying it
-      const responseString = JSON.stringify(log.response).replace(/,/g, ';');
-      const values = [log.id, log.service, log.target, log.date, log.status, `"${responseString}"`];
-      return values.join(',');
+
+    const flattenedLogs = filteredLogs.map(log => flattenObject(log));
+
+    const allKeys = new Set<string>();
+    flattenedLogs.forEach(log => {
+        Object.keys(log).forEach(key => allKeys.add(key));
     });
-    const csvString = `data:text/csv;charset=utf-8,${encodeURIComponent([headers, ...rows].join('\n'))}`;
+
+    const headers = Array.from(allKeys);
+    
+    const csvRows = [
+        headers.join(','),
+        ...flattenedLogs.map(log => 
+            headers.map(header => {
+                const value = log[header];
+                if (typeof value === 'string' && value.includes(',')) {
+                    return `"${value.replace(/"/g, '""')}"`;
+                }
+                return value;
+            }).join(',')
+        )
+    ];
+
+    const csvString = `data:text/csv;charset=utf-8,${encodeURIComponent(csvRows.join('\n'))}`;
     const link = document.createElement("a");
     link.href = csvString;
     link.download = "api_sentinel_history.csv";
