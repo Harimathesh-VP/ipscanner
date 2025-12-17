@@ -112,7 +112,7 @@ export const services: Service[] = [
     description: 'Aggregated reputation and blacklist checks for IPs, domains, and URLs.',
     placeholder: 'Enter an IP, domain, or URL',
     inputType: 'resource',
-    documentationUrl: 'https://www.apivoid.com/api/',
+    documentationUrl: 'https://www.apivoid.com/documentation',
   },
   {
     id: 'whoisxml',
