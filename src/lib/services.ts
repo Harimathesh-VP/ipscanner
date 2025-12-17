@@ -181,7 +181,7 @@ export const services: Service[] = [
     description: 'Commercial reputation and categorization for IPs, domains, and URLs.',
     placeholder: 'Enter an IP, domain, or URL',
     inputType: 'resource',
-    documentationUrl: 'https://www.webroot.com/us/en/business/integration/brightcloud-threat-intelligence-api',
+    documentationUrl: 'https://www.brightcloud.com/support/api-documentation',
   },
   {
     id: 'riskiq',
