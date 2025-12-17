@@ -23,13 +23,16 @@ export async function callGreyNoise(input: GreyNoiseInput): Promise<GreyNoiseOut
   }
   
   try {
-    // Using the /v2/ips/{ip} endpoint for full context, as /v3/community is deprecated/limited.
+    // Using the /v2/ips/{ip} endpoint for full context. This is the Enterprise endpoint,
+    // which gracefully degrades for free/community keys by omitting fields.
     const response = await fetch(`https://api.greynoise.io/v2/ips/${ipAddress}`, {
       headers: { 'key': key, 'Accept': 'application/json' },
     });
 
     if (!response.ok) {
         if (response.status === 404) {
+            // This is an expected case where GreyNoise has not seen the IP.
+            // Return a normalized response indicating this.
             return { ip: ipAddress, noise: false, message: 'This IP address was not found in the GreyNoise dataset.' };
         }
        const errorData = await response.json();
