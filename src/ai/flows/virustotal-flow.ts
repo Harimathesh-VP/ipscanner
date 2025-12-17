@@ -14,6 +14,52 @@ export type VirusTotalInput = z.infer<typeof VirusTotalInputSchema>;
 
 export type VirusTotalOutput = any;
 
+function formatVtWhois(data: any): string {
+    if (typeof data === 'string') {
+        return data;
+    }
+    if (typeof data !== 'object' || data === null) {
+        return 'Invalid WHOIS data format.';
+    }
+
+    let output = '';
+    const keyOrder = [
+        'Domain Name', 'Registry Domain ID', 'Registrar WHOIS Server', 'Registrar URL', 'Updated Date', 'Creation Date', 'Registrar Registration Expiration Date',
+        'Registrar', 'Registrar IANA ID', 'Registrar Abuse Contact Email', 'Registrar Abuse Contact Phone',
+        'Domain Status', 'Registry Registrant ID', 'Registrant Name', 'Registrant Organization',
+        'Registrant Street', 'Registrant City', 'Registrant State/Province', 'Registrant Postal Code', 'Registrant Country',
+        'Registrant Phone', 'Registrant Phone Ext', 'Registrant Fax', 'Registrant Fax Ext', 'Registrant Email'
+    ];
+
+    const processedKeys = new Set();
+
+    // Add keys in specific order
+    keyOrder.forEach(key => {
+        const formattedKey = key.toLowerCase().replace(/ /g, '_');
+        if (data[formattedKey]) {
+            const label = `${key}:`.padEnd(30);
+            output += `${label}${data[formattedKey]}\n`;
+            processedKeys.add(formattedKey);
+        } else if (data[key]) {
+            const label = `${key}:`.padEnd(30);
+            output += `${label}${data[key]}\n`;
+            processedKeys.add(key);
+        }
+    });
+
+    // Add remaining keys
+    for (const key in data) {
+        if (!processedKeys.has(key) && data[key]) {
+            const label = `${key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}:`.padEnd(30);
+            const value = Array.isArray(data[key]) ? data[key].join(', ') : data[key];
+            output += `${label}${value}\n`;
+        }
+    }
+
+    return output;
+}
+
+
 export async function callVirusTotal(input: VirusTotalInput): Promise<VirusTotalOutput> {
   const { resource, apiKeys } = input;
   const key = apiKeys?.virustotal || process.env.VIRUSTOTAL_API_KEY;
@@ -57,7 +103,10 @@ export async function callVirusTotal(input: VirusTotalInput): Promise<VirusTotal
         if(subdomainsResponse.ok) mainData.data.attributes.subdomains = (await subdomainsResponse.json()).data;
         
         const whoisResponse = await fetch(`${url}/whois`, { headers: { 'x-apikey': key } });
-        if(whoisResponse.ok) mainData.data.attributes.whois = (await whoisResponse.json()).data.attributes;
+        if(whoisResponse.ok) {
+          const whoisData = (await whoisResponse.json()).data.attributes;
+          mainData.data.attributes.whois = formatVtWhois(whoisData);
+        }
     }
 
     return mainData;

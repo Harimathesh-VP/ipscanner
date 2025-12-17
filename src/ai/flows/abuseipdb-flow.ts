@@ -15,12 +15,66 @@ export type AbuseIPDBInput = z.infer<typeof AbuseIPDBInputSchema>;
 
 export type AbuseIPDBOutput = any;
 
+
+function formatRdapToWhois(rdapJson: any): string {
+  let output = '';
+  if (rdapJson.handle) output += `NetHandle:      ${rdapJson.handle}\n`;
+  if (rdapJson.startAddress && rdapJson.endAddress) output += `NetRange:       ${rdapJson.startAddress} - ${rdapJson.endAddress}\n`;
+  if (rdapJson.ipVersion) output += `NetType:        ${rdapJson.ipVersion}\n`;
+  if (rdapJson.name) output += `NetName:        ${rdapJson.name}\n`;
+  if (rdapJson.parentHandle) output += `Parent:         ${rdapJson.parentHandle}\n`;
+  if (rdapJson.objectClassName) output += `NetType:        ${rdapJson.objectClassName}\n`;
+
+  if (rdapJson.events) {
+    const regDate = rdapJson.events.find((e: any) => e.eventAction === 'registration');
+    const updateDate = rdapJson.events.find((e: any) => e.eventAction === 'last changed');
+    if (regDate) output += `RegDate:        ${new Date(regDate.eventDate).toISOString()}\n`;
+    if (updateDate) output += `Updated:        ${new Date(updateDate.eventDate).toISOString()}\n`;
+  }
+  
+  if (rdapJson.remarks) {
+      rdapJson.remarks.forEach((remark: any) => {
+          output += `Comment:        ${remark.title || ''}\n`;
+          if (remark.description) {
+            remark.description.forEach((desc: string) => {
+                 output += `Comment:        ${desc}\n`
+            });
+          }
+      });
+  }
+
+
+  if (rdapJson.entities) {
+    rdapJson.entities.forEach((entity: any) => {
+      output += '\n';
+      if (entity.handle) output += `OrgHandle:      ${entity.handle}\n`;
+      if (entity.roles) output += `OrgID:          ${entity.roles.join(', ')}\n`;
+      
+      const vcard = entity.vcardArray?.[1];
+      if (vcard) {
+         const name = vcard.find((v: any) => v[0] === 'fn')?.[3];
+         const email = vcard.find((v: any) => v[0] === 'email')?.[3];
+         const address = vcard.find((v: any) => v[0] === 'adr')?.[3];
+         const phone = vcard.find((v: any) => v[0] === 'tel')?.[3];
+
+         if(name) output += `OrgName:        ${name}\n`;
+         if(address) output += `Address:        ${address.join(', ')}\n`;
+         if(phone) output += `OrgPhone:       ${phone}\n`;
+         if(email) output += `OrgEmail:       ${email}\n`;
+      }
+    });
+  }
+  
+  return output;
+}
+
+
 async function getIpWhoisFromRDAP(ip: string): Promise<string | null> {
     try {
         const rdapResponse = await fetch(`https://rdap.arin.net/registry/ip/${ip}`);
         if (rdapResponse.ok) {
             const rdapJson = await rdapResponse.json();
-            return JSON.stringify(rdapJson, null, 2);
+            return formatRdapToWhois(rdapJson);
         }
         return `Could not fetch WHOIS from RDAP. Status: ${rdapResponse.status}`;
     } catch (e: any) {
