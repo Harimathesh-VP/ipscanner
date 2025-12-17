@@ -22,6 +22,7 @@ import {
   Settings,
   FileText,
   CheckCircle,
+  User,
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -130,7 +131,12 @@ export default function AppSidebar() {
           <DropdownMenuContent className="w-56 mb-2" side="top" align="start">
             <DropdownMenuLabel>My Account</DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>Profile</DropdownMenuItem>
+            <DropdownMenuItem asChild>
+              <Link href="/dashboard/profile">
+                <User className="mr-2 h-4 w-4" />
+                <span>Profile</span>
+              </Link>
+            </DropdownMenuItem>
             <DropdownMenuItem>Billing</DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem asChild>
