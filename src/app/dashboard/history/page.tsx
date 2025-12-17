@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { format } from 'date-fns';
-import { Download, Search, Upload, Trash2, ChevronDown } from 'lucide-react';
+import { Download, Search, Upload, Trash2, ChevronDown, Eye } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -27,13 +27,22 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
 import { useToast } from '@/hooks/use-toast';
+import { HistoryDetailViewer } from '@/components/dashboard/history/history-detail-viewer';
 
 
 export default function HistoryPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const { history: logs, clearHistory, addToHistory } = useApiKeys();
   const { toast } = useToast();
+  const [selectedLog, setSelectedLog] = useState<RequestLog | null>(null);
 
   const filteredLogs = logs.filter(log =>
     log.target.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -125,8 +134,12 @@ export default function HistoryPage() {
                 headers.forEach((header, i) => {
                     const key = header.trim();
                     let value = values[i] || '';
-                    if (key === 'response') {
-                        value = JSON.parse(value.replace(/^"|"$/g, '').replace(/;/g, ','));
+                    if (key.startsWith('response')) {
+                         try {
+                           value = JSON.parse(value.replace(/^"|"$/g, '').replace(/;/g, ','));
+                         } catch {
+                           // Keep as string if parsing fails
+                         }
                     }
                     log[key] = value;
                 });
@@ -145,8 +158,18 @@ export default function HistoryPage() {
               importedLogs = lines.slice(1).map((line) => {
                   const values = line.split(',');
                   const log: any = {};
-                  headers.forEach((header, i) => log[header.trim()] = values[i]);
-                  if(log.response) log.response = JSON.parse(log.response);
+                  headers.forEach((header, i) => {
+                    const key = header.trim()
+                    if (key.startsWith('response')) {
+                      try {
+                        log[key] = JSON.parse(values[i]);
+                      } catch {
+                        log[key] = values[i]
+                      }
+                    } else {
+                      log[key] = values[i]
+                    }
+                  });
                   return log as RequestLog;
               }).filter(l => l.id);
            }
@@ -182,100 +205,124 @@ export default function HistoryPage() {
   };
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight font-headline">Request History</h1>
-        <p className="text-muted-foreground">
-          Browse, search, import, and export your past API requests.
-        </p>
-      </div>
-      <Card>
-        <CardHeader>
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <CardTitle>All Requests</CardTitle>
-            <div className="flex gap-2 w-full sm:w-auto">
-              <div className="relative flex-grow">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Search logs..."
-                  className="pl-10"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                />
-              </div>
-               <input type="file" id="import-input" className="hidden" accept=".json,.csv,.txt" onChange={handleFileImport} />
-               <Button variant="outline" onClick={handleImportClick}><Upload className="mr-2 h-4 w-4" /> Import</Button>
-               
-               <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="outline" disabled={logs.length === 0}>
-                      <Download className="mr-2 h-4 w-4" /> Export <ChevronDown className="ml-2 h-4 w-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent>
-                    <DropdownMenuItem onClick={handleExportJson}>As JSON</DropdownMenuItem>
-                    <DropdownMenuItem onClick={handleExportCsv}>As CSV</DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
+    <>
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight font-headline">Request History</h1>
+          <p className="text-muted-foreground">
+            Browse, search, import, and export your past API requests.
+          </p>
+        </div>
+        <Card>
+          <CardHeader>
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <CardTitle>All Requests</CardTitle>
+              <div className="flex gap-2 w-full sm:w-auto">
+                <div className="relative flex-grow">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Search logs..."
+                    className="pl-10"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                  />
+                </div>
+                 <input type="file" id="import-input" className="hidden" accept=".json,.csv,.txt" onChange={handleFileImport} />
+                 <Button variant="outline" onClick={handleImportClick}><Upload className="mr-2 h-4 w-4" /> Import</Button>
+                 
+                 <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="outline" disabled={logs.length === 0}>
+                        <Download className="mr-2 h-4 w-4" /> Export <ChevronDown className="ml-2 h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent>
+                      <DropdownMenuItem onClick={handleExportJson}>As JSON</DropdownMenuItem>
+                      <DropdownMenuItem onClick={handleExportCsv}>As CSV</DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
 
-                <AlertDialog>
-                  <AlertDialogTrigger asChild>
-                    <Button variant="destructive" disabled={logs.length === 0}>
-                      <Trash2 className="mr-2 h-4 w-4" /> Clear History
-                    </Button>
-                  </AlertDialogTrigger>
-                  <AlertDialogContent>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                      <AlertDialogDescription>
-                        This action cannot be undone. This will permanently delete all request logs.
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel>Cancel</AlertDialogCancel>
-                      <AlertDialogAction onClick={handleClearHistory}>
-                        Yes, delete history
-                      </AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button variant="destructive" disabled={logs.length === 0}>
+                        <Trash2 className="mr-2 h-4 w-4" /> Clear History
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          This action cannot be undone. This will permanently delete all request logs.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction onClick={handleClearHistory}>
+                          Yes, delete history
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+              </div>
             </div>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Service</TableHead>
-                <TableHead>Target</TableHead>
-                <TableHead>Date</TableHead>
-                <TableHead>Status</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredLogs.length > 0 ? filteredLogs.map((log) => (
-                <TableRow key={log.id}>
-                  <TableCell className="font-medium">{log.service}</TableCell>
-                  <TableCell className="font-code">{log.target}</TableCell>
-                  <TableCell>{format(new Date(log.date), 'PPpp')}</TableCell>
-                  <TableCell>
-                    <Badge variant={log.status === 'Success' ? 'default' : 'destructive'} 
-                           className={log.status === 'Success' ? 'bg-green-500/20 text-green-700 border-green-500/30 hover:bg-green-500/30' : ''}>
-                      {log.status}
-                    </Badge>
-                  </TableCell>
-                </TableRow>
-              )) : (
+          </CardHeader>
+          <CardContent>
+            <Table>
+              <TableHeader>
                 <TableRow>
-                    <TableCell colSpan={4} className="h-24 text-center">
-                        No logs found.
-                    </TableCell>
+                  <TableHead>Service</TableHead>
+                  <TableHead>Target</TableHead>
+                  <TableHead>Date</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
-    </div>
+              </TableHeader>
+              <TableBody>
+                {filteredLogs.length > 0 ? filteredLogs.map((log) => (
+                  <TableRow key={log.id} className="cursor-pointer" onClick={() => setSelectedLog(log)}>
+                    <TableCell className="font-medium">{log.service}</TableCell>
+                    <TableCell className="font-code">{log.target}</TableCell>
+                    <TableCell>{format(new Date(log.date), 'PPpp')}</TableCell>
+                    <TableCell>
+                      <Badge variant={log.status === 'Success' ? 'default' : 'destructive'} 
+                             className={log.status === 'Success' ? 'bg-green-500/20 text-green-700 border-green-500/30 hover:bg-green-500/30' : ''}>
+                        {log.status}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-right">
+                       <Button variant="ghost" size="icon" className="h-8 w-8">
+                         <Eye className="h-4 w-4" />
+                       </Button>
+                    </TableCell>
+                  </TableRow>
+                )) : (
+                  <TableRow>
+                      <TableCell colSpan={5} className="h-24 text-center">
+                          No logs found.
+                      </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
+      </div>
+
+       <Dialog open={!!selectedLog} onOpenChange={(open) => !open && setSelectedLog(null)}>
+        <DialogContent className="max-w-3xl">
+          {selectedLog && (
+            <>
+              <DialogHeader>
+                <DialogTitle>Request Details</DialogTitle>
+                <DialogDescription>
+                  Full details for the request made to {selectedLog.service}.
+                </DialogDescription>
+              </DialogHeader>
+              <HistoryDetailViewer log={selectedLog} />
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
