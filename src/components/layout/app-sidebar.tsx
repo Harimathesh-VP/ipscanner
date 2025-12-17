@@ -39,7 +39,6 @@ import { ApiSentinelLogo } from '@/components/logos/api-sentinel-logo';
 
 const navItems = [
   { href: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
-  { href: '/dashboard/reports', icon: FileText, label: 'Reports' },
   { href: '/dashboard/history', icon: History, label: 'History' },
   { href: '/dashboard/settings', icon: Settings, label: 'Settings' },
 ];
