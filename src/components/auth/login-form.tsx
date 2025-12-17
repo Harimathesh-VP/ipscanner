@@ -21,16 +21,23 @@ export function LoginForm() {
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    router.replace('/home');
+    router.replace('/dashboard');
+  };
+  
+  const handleRegister = (e: React.FormEvent) => {
+    e.preventDefault();
+    router.replace('/dashboard');
   };
 
   return (
-    <Card className="mt-8 w-full max-w-sm">
+    <Card className="w-full max-w-sm border-0 shadow-none sm:border sm:shadow-sm">
       <form onSubmit={handleLogin}>
-        <CardHeader>
-          <CardTitle className="text-2xl">Login</CardTitle>
+        <CardHeader className="text-center">
+          <CardTitle className="text-3xl font-bold tracking-tight font-headline">
+            Welcome Back
+          </CardTitle>
           <CardDescription>
-            Enter your email below to login to your account.
+            Enter your credentials to access your account.
           </CardDescription>
         </CardHeader>
         <CardContent className="grid gap-4">
@@ -42,6 +49,7 @@ export function LoginForm() {
               placeholder="m@example.com"
               required
               defaultValue="user@example.com"
+              className="h-11"
             />
           </div>
           <div className="grid gap-2">
@@ -52,6 +60,7 @@ export function LoginForm() {
                 type={showPassword ? 'text' : 'password'}
                 required
                 defaultValue="password"
+                className="h-11"
               />
               <Button
                 type="button"
@@ -68,9 +77,12 @@ export function LoginForm() {
             </div>
           </div>
         </CardContent>
-        <CardFooter>
-          <Button className="w-full" type="submit">
+        <CardFooter className="flex flex-col gap-4">
+          <Button className="w-full" type="submit" size="lg">
             Sign in
+          </Button>
+          <Button className="w-full" variant="outline" size="lg" onClick={handleRegister}>
+            Register
           </Button>
         </CardFooter>
       </form>

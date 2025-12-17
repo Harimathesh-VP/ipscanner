@@ -10,18 +10,24 @@ import { ApiSentinelLogo } from '@/components/logos/api-sentinel-logo';
 export default function HomePage() {
   return (
     <div className="flex flex-col min-h-screen bg-background">
-      <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur-sm">
-        <div className="container mx-auto flex h-14 items-center px-4 md:px-6">
+      <header className="sticky top-0 z-50 w-full">
+        <div className="container mx-auto flex h-20 items-center px-4 md:px-6">
           <Link href="/dashboard" className="flex items-center gap-2 font-semibold" prefetch={false}>
             <ApiSentinelLogo className="h-8 w-8 text-primary" />
-            <span className="text-xl font-bold font-headline">API Sentinel</span>
+            <span className="text-xl font-bold font-headline text-primary">API Sentinel</span>
           </Link>
-          <nav className="ml-auto flex items-center gap-4">
-            <Button variant="outline" asChild>
-              <Link href="/login">Sign In</Link>
+          <nav className="ml-auto flex items-center gap-2 sm:gap-4">
+            <Button variant="ghost" asChild>
+              <Link href="#">About</Link>
             </Button>
-            <Button asChild>
-              <Link href="/login">Sign Up</Link>
+             <Button variant="ghost" asChild>
+              <Link href="#">Features</Link>
+            </Button>
+             <Button variant="ghost" asChild>
+              <Link href="#">Pricing</Link>
+            </Button>
+            <Button variant="default" asChild>
+              <Link href="/login">Get Started</Link>
             </Button>
           </nav>
         </div>
@@ -30,36 +36,37 @@ export default function HomePage() {
       <main className="flex-1">
         <section className="w-full py-12 md:py-24 lg:py-32 xl:py-48">
           <div className="container px-4 md:px-6">
-            <div className="grid gap-6 lg:grid-cols-[1fr_400px] lg:gap-12 xl:grid-cols-[1fr_600px]">
-              <div className="flex flex-col justify-center space-y-4">
-                <div className="space-y-2">
-                  <h1 className="text-4xl font-bold tracking-tighter font-headline sm:text-5xl xl:text-6xl/none">
-                    Unified Threat Intelligence
-                  </h1>
-                  <p className="max-w-[600px] text-muted-foreground md:text-xl">
-                    API Sentinel is your central hub for querying top-tier security APIs. Aggregate data, generate reports, and streamline your threat analysis workflow.
-                  </p>
-                </div>
-                <div className="flex flex-col gap-2 min-[400px]:flex-row">
-                  <Button asChild size="lg" className="group">
-                    <Link href="/dashboard">
-                      Get Started <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
-                    </Link>
-                  </Button>
-                </div>
+            <div className="flex flex-col justify-center space-y-6 text-center">
+              <div className="space-y-4">
+                 <p className="text-sm font-medium text-primary tracking-widest uppercase">Optimize Growth</p>
+                <h1 className="text-4xl font-bold tracking-tighter font-headline sm:text-5xl md:text-6xl lg:text-7xl/none">
+                  Unified Threat Intelligence
+                </h1>
+                <p className="max-w-[700px] mx-auto text-muted-foreground md:text-xl">
+                  API Sentinel is your central hub for querying top-tier security APIs. Aggregate data, generate reports, and streamline your threat analysis workflow.
+                </p>
               </div>
-               <div className="flex items-center justify-center">
-                    <ApiSentinelLogo className="h-48 w-48 lg:h-64 lg:w-64 text-primary" />
-                </div>
+              <div className="flex flex-col gap-2 min-[400px]:flex-row justify-center">
+                <Button asChild size="lg" className="group">
+                  <Link href="/dashboard">
+                    Try it free
+                  </Link>
+                </Button>
+                 <Button asChild size="lg" variant="outline" className="group">
+                  <Link href="/login">
+                    Register
+                  </Link>
+                </Button>
+              </div>
             </div>
           </div>
         </section>
         
-        <section id="features" className="w-full py-12 md:py-24 lg:py-32 bg-muted">
+        <section id="features" className="w-full py-12 md:py-24 lg:py-32 bg-white">
           <div className="container px-4 md:px-6">
             <div className="flex flex-col items-center justify-center space-y-4 text-center">
               <div className="space-y-2">
-                <div className="inline-block rounded-lg bg-primary/10 px-3 py-1 text-sm text-primary font-medium">Key Features</div>
+                <div className="inline-block rounded-lg bg-muted px-3 py-1 text-sm font-medium">Key Features</div>
                 <h2 className="text-3xl font-bold tracking-tighter font-headline sm:text-5xl">Everything You Need for Threat Intel</h2>
                 <p className="max-w-[900px] text-muted-foreground md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
                   From single queries to consolidated reports, get the data you need, how you need it.
@@ -111,17 +118,17 @@ export default function HomePage() {
           <div className="container px-4 md:px-6">
             <div className="flex flex-col items-center justify-center space-y-4 text-center">
               <div className="space-y-2">
-                 <div className="inline-block rounded-lg bg-primary/10 px-3 py-1 text-sm text-primary font-medium">Integrations</div>
+                 <div className="inline-block rounded-lg bg-muted px-3 py-1 text-sm font-medium">Integrations</div>
                 <h2 className="text-3xl font-bold tracking-tighter font-headline sm:text-5xl">Supported API Providers</h2>
                 <p className="max-w-[900px] text-muted-foreground md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
                   Connect to industry-leading threat intelligence services. More integrations coming soon.
                 </p>
               </div>
             </div>
-            <div className="mx-auto mt-12 grid max-w-5xl grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:gap-6">
+            <div className="mx-auto mt-12 grid max-w-5xl grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
               {services.map((service) => (
                 <a key={service.id} href={service.documentationUrl} target="_blank" rel="noopener noreferrer" className="h-full block hover:scale-105 transition-transform duration-200">
-                  <Card className="h-full">
+                  <Card className="h-full bg-white">
                     <CardContent className="flex flex-col items-center justify-center p-4 sm:p-6 h-full">
                       <service.icon className="h-12 w-12" />
                       <span className="mt-3 text-sm font-medium text-center">{service.name}</span>
