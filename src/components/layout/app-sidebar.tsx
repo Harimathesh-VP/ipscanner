@@ -23,6 +23,7 @@ import {
   FileText,
   CheckCircle,
   User,
+  Info,
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -41,6 +42,7 @@ import { ZeroSharkLogo } from '@/components/logos/zeroshark-logo';
 const navItems = [
   { href: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
   { href: '/dashboard/history', icon: History, label: 'History' },
+  { href: '/dashboard/providers', icon: Info, label: 'Providers' },
   { href: '/dashboard/settings', icon: Settings, label: 'Settings' },
 ];
 

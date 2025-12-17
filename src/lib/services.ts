@@ -13,6 +13,8 @@ export const services: Service[] = [
     placeholder: 'Enter a VT resource (domain, IP, URL)',
     inputType: 'resource',
     documentationUrl: 'https://developers.virustotal.com/reference/overview',
+    pricing: 'Freemium',
+    requestLimit: 500,
   },
   {
     id: 'abuseipdb',
@@ -23,6 +25,8 @@ export const services: Service[] = [
     placeholder: 'Enter an AIPDB resource (IP address)',
     inputType: 'ipAddress',
     documentationUrl: 'https://docs.abuseipdb.com/',
+    pricing: 'Freemium',
+    requestLimit: 1000,
   },
   {
     id: 'securitytrails',
@@ -33,6 +37,8 @@ export const services: Service[] = [
     placeholder: 'Enter an ST resource (domain or IP)',
     inputType: 'resource',
     documentationUrl: 'https://docs.securitytrails.com/docs',
+    pricing: 'Freemium',
+    requestLimit: 50,
   },
   {
     id: 'greynoise',
@@ -43,6 +49,8 @@ export const services: Service[] = [
     placeholder: 'Enter a GN resource (IP address)',
     inputType: 'ipAddress',
     documentationUrl: 'https://docs.greynoise.io/',
+    pricing: 'Freemium',
+    requestLimit: 50,
   },
   {
     id: 'shodan',
@@ -53,6 +61,8 @@ export const services: Service[] = [
     placeholder: 'Enter a Shodan resource (IP or query)',
     inputType: 'query',
     documentationUrl: 'https://developer.shodan.io/',
+    pricing: 'Freemium',
+    requestLimit: 100,
   },
   {
     id: 'alienvault',
@@ -63,6 +73,8 @@ export const services: Service[] = [
     placeholder: 'Enter an OTX resource (IP, domain, hash)',
     inputType: 'resource',
     documentationUrl: 'https://otx.alienvault.com/api',
+    pricing: 'Free',
+    requestLimit: 2000,
   },
   {
     id: 'ipqualityscore',
@@ -73,6 +85,8 @@ export const services: Service[] = [
     placeholder: 'Enter an IPQS resource (IP address)',
     inputType: 'ipAddress',
     documentationUrl: 'https://www.ipqualityscore.com/documentation/overview',
+    pricing: 'Freemium',
+    requestLimit: 5000,
   },
   {
     id: 'ciscotalos',
@@ -83,6 +97,8 @@ export const services: Service[] = [
     placeholder: 'Enter a Talos resource (IP, domain)',
     inputType: 'resource',
     documentationUrl: 'https://talosintelligence.com/reputation_center/lookup',
+    pricing: 'Free',
+    requestLimit: null,
   },
   {
     id: 'xforce',
@@ -93,6 +109,8 @@ export const services: Service[] = [
     placeholder: 'Enter an X-Force resource (IP, URL, hash)',
     inputType: 'resource',
     documentationUrl: 'https://api.xforce.ibmcloud.com/docs/',
+    pricing: 'Freemium',
+    requestLimit: 5000,
   },
   {
     id: 'googlesafebrowsing',
@@ -103,6 +121,8 @@ export const services: Service[] = [
     placeholder: 'Enter a URL, domain, or IP',
     inputType: 'resource',
     documentationUrl: 'https://developers.google.com/safe-browsing/v4/lookup-api',
+    pricing: 'Free',
+    requestLimit: 10000,
   },
   {
     id: 'apivoid',
@@ -112,7 +132,9 @@ export const services: Service[] = [
     description: 'Aggregated reputation and blacklist checks for IPs, domains, and URLs.',
     placeholder: 'Enter an IP, domain, or URL',
     inputType: 'resource',
-    documentationUrl: 'https://www.apivoid.com/documentation',
+    documentationUrl: 'https://www.apivoid.com/api/',
+    pricing: 'Freemium',
+    requestLimit: 100,
   },
   {
     id: 'whoisxml',
@@ -123,6 +145,8 @@ export const services: Service[] = [
     placeholder: 'Enter a domain, IP, or ASN',
     inputType: 'resource',
     documentationUrl: 'https://www.whoisxmlapi.com/documentation/',
+    pricing: 'Freemium',
+    requestLimit: 500,
   },
   {
     id: 'spamhaus',
@@ -133,6 +157,8 @@ export const services: Service[] = [
     placeholder: 'Enter an IP or domain',
     inputType: 'resource',
     documentationUrl: 'https://www.spamhaus.org/documentation/',
+    pricing: 'Free',
+    requestLimit: null,
   },
   {
     id: 'neutrino',
@@ -143,6 +169,8 @@ export const services: Service[] = [
     placeholder: 'Enter an IP address',
     inputType: 'ipAddress',
     documentationUrl: 'https://www.neutrinoapi.com/api/ip-probe/',
+    pricing: 'Freemium',
+    requestLimit: 25,
   },
   {
     id: 'threatminer',
@@ -153,6 +181,8 @@ export const services: Service[] = [
     placeholder: 'Enter an IP, domain, or hash',
     inputType: 'resource',
     documentationUrl: 'https://www.threatminer.org/api.php',
+    pricing: 'Free',
+    requestLimit: null,
   },
   {
     id: 'fraudguard',
@@ -163,6 +193,8 @@ export const services: Service[] = [
     placeholder: 'Enter an IP address',
     inputType: 'ipAddress',
     documentationUrl: 'https://fraudguard.io/docs',
+    pricing: 'Paid',
+    requestLimit: null,
   },
   {
     id: 'zscaler',
@@ -173,6 +205,8 @@ export const services: Service[] = [
     placeholder: 'Enter a URL, domain, or IP',
     inputType: 'resource',
     documentationUrl: 'https://help.zscaler.com/zia/api',
+    pricing: 'Paid',
+    requestLimit: null,
   },
   {
     id: 'webroot',
@@ -183,6 +217,8 @@ export const services: Service[] = [
     placeholder: 'Enter an IP, domain, or URL',
     inputType: 'resource',
     documentationUrl: 'https://www.brightcloud.com/support/api-documentation.php',
+    pricing: 'Paid',
+    requestLimit: null,
   },
   {
     id: 'riskiq',
@@ -193,5 +229,7 @@ export const services: Service[] = [
     placeholder: 'Enter an IP, domain, or ASN',
     inputType: 'resource',
     documentationUrl: 'https://community.riskiq.com/docs',
+    pricing: 'Freemium',
+    requestLimit: 15,
   },
 ];
