@@ -96,39 +96,39 @@ export default function HomePage() {
               </div>
             </div>
             <div className="mx-auto grid max-w-5xl items-start gap-8 sm:grid-cols-2 md:gap-12 lg:max-w-none lg:grid-cols-3 mt-12">
-              <div className="grid gap-1">
+              <div className="flex flex-col items-center text-center gap-2">
                 <h3 className="text-lg font-bold flex items-center gap-2"><Check className="text-primary"/>Multi-Service Queries</h3>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-sm text-muted-foreground max-w-xs">
                   Query multiple threat intelligence platforms from a single, unified interface.
                 </p>
               </div>
-              <div className="grid gap-1">
+              <div className="flex flex-col items-center text-center gap-2">
                 <h3 className="text-lg font-bold flex items-center gap-2"><Check className="text-primary"/>Centralized API Key Management</h3>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-sm text-muted-foreground max-w-xs">
                   Securely store and manage your API keys for all supported services in one place.
                 </p>
               </div>
-              <div className="grid gap-1">
+              <div className="flex flex-col items-center text-center gap-2">
                 <h3 className="text-lg font-bold flex items-center gap-2"><Check className="text-primary"/>Consolidated Reporting</h3>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-sm text-muted-foreground max-w-xs">
                    Generate comprehensive reports that aggregate data from multiple sources for any given indicator.
                 </p>
               </div>
-               <div className="grid gap-1">
+               <div className="flex flex-col items-center text-center gap-2">
                 <h3 className="text-lg font-bold flex items-center gap-2"><Check className="text-primary"/>Rich Data Visualization</h3>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-sm text-muted-foreground max-w-xs">
                    Understand VirusTotal results instantly with categorized and color-coded vendor analysis.
                 </p>
               </div>
-              <div className="grid gap-1">
+              <div className="flex flex-col items-center text-center gap-2">
                 <h3 className="text-lg font-bold flex items-center gap-2"><Check className="text-primary"/>Request History</h3>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-sm text-muted-foreground max-w-xs">
                   Keep track of all your queries. Import and export your history in JSON or CSV format.
                 </p>
               </div>
-               <div className="grid gap-1">
+               <div className="flex flex-col items-center text-center gap-2">
                 <h3 className="text-lg font-bold flex items-center gap-2"><Check className="text-primary"/>Developer-Focused</h3>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-sm text-muted-foreground max-w-xs">
                    Easily view and copy the raw JSON responses from any API for use in your own tools and scripts.
                 </p>
               </div>
