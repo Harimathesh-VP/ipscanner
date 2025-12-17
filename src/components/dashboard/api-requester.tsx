@@ -11,7 +11,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useApiKeys } from '@/context/api-keys-context';
 import { callVirusTotal } from '@/ai/flows/virustotal-flow';
 import { callAbuseIPDB } from '@/ai/flows/abuseipdb-flow';
-import { callSecurityTrails } from '@/ai/flows/securitytrails-flow';
+import { callSecurityTrails } from '@/aiflows/securitytrails-flow';
 import { callGreyNoise } from '@/ai/flows/greynoise-flow';
 import { callShodan } from '@/ai/flows/shodan-flow';
 import { callAlienVault } from '@/ai/flows/alienvault-flow';
@@ -176,7 +176,7 @@ export function ApiRequester() {
 
   return (
     <Tabs defaultValue={services[0].id} className="w-full">
-      <TabsList className="grid h-auto w-full grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-10">
+      <TabsList className="grid h-auto w-full grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-10">
         {services.map((service) => (
           <TabsTrigger key={service.id} value={service.id} className="flex-col h-14 gap-2">
              <service.icon className="h-6 w-6" />
