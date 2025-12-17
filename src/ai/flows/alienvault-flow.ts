@@ -18,7 +18,7 @@ export type AlienVaultOutput = any;
 
 function formatRdapToWhois(rdap: any): string {
     let output = '';
-    const pad = (key: string) => key.padEnd(16, ' ');
+    const pad = (key: string, length = 16) => key.padEnd(length, ' ');
 
     const main = [
         { key: 'NetRange', value: rdap.startAddress && rdap.endAddress ? `${rdap.startAddress} - ${rdap.endAddress}` : undefined },
@@ -42,7 +42,7 @@ function formatRdapToWhois(rdap: any): string {
 
     if (rdap.remarks) {
         rdap.remarks.forEach((remark: any) => {
-            output += `${pad('Comment:')} ${remark.title || ''}\n`;
+            output += `\n${pad('Comment:')} ${remark.title || ''}\n`;
             if (remark.description) {
                 remark.description.forEach((desc: string) => {
                     output += `${pad('Comment:')} ${desc}\n`;
@@ -52,18 +52,30 @@ function formatRdapToWhois(rdap: any): string {
     }
 
     const processEntity = (entity: any) => {
-        let entityOutput = '\n';
-        if (!entity.vcardArray || !Array.isArray(entity.vcardArray)) return '';
+        if (!entity?.vcardArray?.[1]) return '';
         const vcard = entity.vcardArray[1];
-
+        
+        let entityOutput = '\n';
+        
         const orgName = vcard.find((v: any) => v[0] === 'fn')?.[3];
         const orgId = entity.handle;
 
         const role = entity.roles?.[0] ? `Org${entity.roles[0].charAt(0).toUpperCase() + entity.roles[0].slice(1)}` : 'Org';
 
+        const roleHandle = `${role}Handle:`;
+        const roleName = `${role}Name:`;
+        const rolePhone = `${role}Phone:`;
+        const roleEmail = `${role}Email:`;
+        const roleRef = `${role}Ref:`;
+
         if (orgName && orgId) {
-           entityOutput += `${pad(role + 'Name:')} ${orgName}\n`;
-           entityOutput += `${pad(role + 'ID:')} ${orgId}\n`;
+            if (entity.roles?.includes('technical') || entity.roles?.includes('abuse')) {
+                entityOutput += `${pad(roleHandle)} ${orgId}\n`;
+            }
+           entityOutput += `${pad(roleName)} ${orgName}\n`;
+           if(!entity.roles?.includes('technical') && !entity.roles?.includes('abuse')) {
+                entityOutput += `${pad('OrgId:')} ${orgId}\n`;
+           }
         }
         
         const adr = vcard.find((v: any) => v[0] === 'adr')?.[3];
@@ -81,7 +93,7 @@ function formatRdapToWhois(rdap: any): string {
             if(addressParts.zip) entityOutput += `${pad('PostalCode:')} ${addressParts.zip}\n`;
             if(addressParts.country) entityOutput += `${pad('Country:')} ${addressParts.country}\n`;
         }
-
+        
         const regDate = entity.events?.find((e: any) => e.eventAction === 'registration')?.eventDate;
         const lastChanged = entity.events?.find((e: any) => e.eventAction === 'last changed')?.eventDate;
         if(regDate) entityOutput += `${pad('RegDate:')} ${regDate}\n`;
@@ -89,28 +101,23 @@ function formatRdapToWhois(rdap: any): string {
 
         if (entity.remarks) {
             entity.remarks.forEach((remark: any) => {
-                remark.description.forEach((desc: string) => {
-                     entityOutput += `${pad('Comment:')} ${desc}\n`;
-                });
+                 if (remark.description) {
+                    remark.description.forEach((desc: string) => {
+                        entityOutput += `${pad('Comment:')} ${desc}\n`;
+                    });
+                }
             });
         }
 
-
         const phone = vcard.find((v: any) => v[0] === 'tel')?.[3];
-        if (phone) entityOutput += `${pad(role + 'Phone:')} ${phone.replace('tel:', '')}\n`;
+        if (phone) entityOutput += `${pad(rolePhone)} ${phone.replace('tel:', '')}\n`;
 
         const email = vcard.find((v: any) => v[0] === 'email')?.[3];
-        if (email) entityOutput += `${pad(role + 'Email:')} ${email}\n`;
+        if (email) entityOutput += `${pad(roleEmail)} ${email}\n`;
         
         const ref = entity.links?.find((l: any) => l.rel === 'self')?.href;
-        if (ref) entityOutput += `${pad(role + 'Ref:')} ${ref}\n`;
+        if (ref) entityOutput += `${pad(roleRef)} ${ref}\n`;
         
-        // For specific contact handles like OrgTech, OrgAbuse
-        if (entity.roles?.some((r: string) => ['technical', 'abuse'].includes(r))) {
-            const handleName = `${role}Handle:`;
-            entityOutput = `\n${pad(handleName)} ${orgId}\n` + entityOutput.trimStart();
-        }
-
         return entityOutput;
     };
     

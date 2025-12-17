@@ -14,49 +14,51 @@ export type VirusTotalInput = z.infer<typeof VirusTotalInputSchema>;
 
 export type VirusTotalOutput = any;
 
-function formatVtWhois(data: any): string {
-    if (typeof data === 'string') {
-        return data;
+function formatVtWhois(whoisString: string): string {
+    // This function assumes the input is a raw WHOIS text string.
+    // It can be expanded to parse structured data if VT provides it.
+    if (typeof whoisString !== 'string') {
+        try {
+          // If it's an object, try to stringify it prettily.
+          // This is a fallback and might not match the desired format perfectly.
+          return JSON.stringify(whoisString, null, 2);
+        } catch {
+          return 'Invalid WHOIS data format.';
+        }
     }
-    if (typeof data !== 'object' || data === null) {
-        return 'Invalid WHOIS data format.';
-    }
 
-    let output = '';
-    const keyOrder = [
-        'Domain Name', 'Registry Domain ID', 'Registrar WHOIS Server', 'Registrar URL', 'Updated Date', 'Creation Date', 'Registrar Registration Expiration Date',
-        'Registrar', 'Registrar IANA ID', 'Registrar Abuse Contact Email', 'Registrar Abuse Contact Phone',
-        'Domain Status', 'Registry Registrant ID', 'Registrant Name', 'Registrant Organization',
-        'Registrant Street', 'Registrant City', 'Registrant State/Province', 'Registrant Postal Code', 'Registrant Country',
-        'Registrant Phone', 'Registrant Phone Ext', 'Registrant Fax', 'Registrant Fax Ext', 'Registrant Email'
-    ];
+    // Split into lines and format.
+    const lines = whoisString.split('\n');
+    let formatted = '';
+    let longestKey = 0;
+    
+    const parsedLines = lines.map(line => {
+        const parts = line.split(/:\s+/);
+        if (parts.length >= 2) {
+            const key = parts[0].trim();
+            const value = parts.slice(1).join(':').trim();
+            if (key.length > longestKey && !key.startsWith('%') && !key.startsWith('#')) {
+                longestKey = key.length;
+            }
+            return { key, value };
+        }
+        return { raw: line };
+    }).filter(l => (l.key && l.value) || (l.raw && l.raw.trim() !== ''));
 
-    const processedKeys = new Set();
-
-    // Add keys in specific order
-    keyOrder.forEach(key => {
-        const formattedKey = key.toLowerCase().replace(/ /g, '_');
-        if (data[formattedKey]) {
-            const label = `${key}:`.padEnd(30);
-            output += `${label}${data[formattedKey]}\n`;
-            processedKeys.add(formattedKey);
-        } else if (data[key]) {
-            const label = `${key}:`.padEnd(30);
-            output += `${label}${data[key]}\n`;
-            processedKeys.add(key);
+    parsedLines.forEach(line => {
+        if (line.key && line.value) {
+            // Don't pad comments or special lines
+            if (line.key.toLowerCase() === 'comment' || line.key.startsWith('remarks')) {
+                 formatted += `${line.key}:${' '.repeat(16 - line.key.length -1)} ${line.value}\n`;
+            } else {
+                 formatted += `${line.key.padEnd(16, ' ')}: ${line.value}\n`;
+            }
+        } else if (line.raw) {
+            formatted += `${line.raw}\n`;
         }
     });
 
-    // Add remaining keys
-    for (const key in data) {
-        if (!processedKeys.has(key) && data[key]) {
-            const label = `${key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}:`.padEnd(30);
-            const value = Array.isArray(data[key]) ? data[key].join(', ') : data[key];
-            output += `${label}${value}\n`;
-        }
-    }
-
-    return output;
+    return formatted.trim();
 }
 
 
@@ -104,7 +106,7 @@ export async function callVirusTotal(input: VirusTotalInput): Promise<VirusTotal
         
         const whoisResponse = await fetch(`${url}/whois`, { headers: { 'x-apikey': key } });
         if(whoisResponse.ok) {
-          const whoisData = (await whoisResponse.json()).data.attributes;
+          const whoisData = (await whoisResponse.json()).data.attributes.whois;
           mainData.data.attributes.whois = formatVtWhois(whoisData);
         }
     }
