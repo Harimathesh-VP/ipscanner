@@ -18,10 +18,10 @@ export default function HomePage() {
           </Link>
           <nav className="ml-auto flex items-center gap-2 sm:gap-4">
             <Button variant="ghost" asChild>
-              <Link href="#">About</Link>
+              <Link href="#about">About</Link>
             </Button>
              <Button variant="ghost" asChild>
-              <Link href="#">Features</Link>
+              <Link href="#features">Features</Link>
             </Button>
              <Button variant="ghost" asChild>
               <Link href="#">Pricing</Link>
@@ -57,6 +57,28 @@ export default function HomePage() {
                     Register
                   </Link>
                 </Button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section id="about" className="w-full py-12 md:py-24 lg:py-32 bg-muted/40">
+          <div className="container px-4 md:px-6">
+            <div className="grid gap-10 lg:grid-cols-2 lg:gap-16">
+              <div className="flex flex-col justify-center space-y-4">
+                <div className="space-y-2">
+                  <div className="inline-block rounded-lg bg-secondary px-3 py-1 text-sm font-medium">About Us</div>
+                  <h2 className="text-3xl font-bold tracking-tighter font-headline sm:text-4xl md:text-5xl">Our Mission: Simplify Security</h2>
+                </div>
+                <p className="text-muted-foreground md:text-lg/relaxed">
+                  In a world with countless security tools, threat intelligence can become fragmented and overwhelming. API Sentinel was built to solve this problem. Our mission is to provide a single, powerful interface for security professionals and developers to query, aggregate, and analyze data from the industry's best threat intelligence sources.
+                </p>
+                <p className="text-muted-foreground md:text-lg/relaxed">
+                  We believe that by centralizing access and streamlining workflows, we can empower teams to make faster, more informed decisions, and ultimately build a more secure digital world.
+                </p>
+              </div>
+              <div className="flex items-center justify-center">
+                  <ApiSentinelLogo className="h-48 w-48 text-primary/10" strokeWidth={1} />
               </div>
             </div>
           </div>
