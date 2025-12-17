@@ -85,7 +85,7 @@ export function AbuseIPDBResultViewer({ result }: AbuseIPDBResultViewerProps) {
 
   return (
     <Tabs defaultValue="overview" className="mt-4">
-       <TabsList className="grid grid-cols-3 w-auto">
+       <TabsList className="grid grid-cols-1 sm:grid-cols-3 w-full sm:w-auto h-auto sm:h-10">
           <TabsTrigger value="overview"><Fingerprint className="mr-2" /> Overview</TabsTrigger>
           <TabsTrigger value="reports" disabled={!hasReports}><List className="mr-2" /> Reports ({data.totalReports || 0})</TabsTrigger>
           <TabsTrigger value="whois" disabled={!hasWhois}><BookCopy className="mr-2" /> WHOIS</TabsTrigger>
@@ -112,7 +112,7 @@ export function AbuseIPDBResultViewer({ result }: AbuseIPDBResultViewerProps) {
                     <CardHeader>
                         <CardTitle className="text-base flex items-center gap-2 text-muted-foreground"><Globe /> Location & Network</CardTitle>
                     </CardHeader>
-                     <CardContent className="grid gap-3 text-sm">
+                     <CardContent className="grid gap-3 text-sm p-6">
                         <div className="flex justify-between"><span>Country</span> <span className="font-medium">{data.countryName} ({data.countryCode})</span></div>
                         <div className="flex justify-between"><span>Domain</span> <span className="font-medium font-code">{data.domain}</span></div>
                         <div className="flex justify-between"><span>ISP</span> <span className="font-medium">{data.isp}</span></div>
@@ -123,7 +123,7 @@ export function AbuseIPDBResultViewer({ result }: AbuseIPDBResultViewerProps) {
                     <CardHeader>
                         <CardTitle className="text-base flex items-center gap-2 text-muted-foreground"><AlertTriangle /> Abuse Reports</CardTitle>
                     </CardHeader>
-                     <CardContent className="grid gap-3 text-sm">
+                     <CardContent className="grid gap-3 text-sm p-6">
                         <div className="flex justify-between"><span>Total Reports</span> <Badge variant="destructive">{data.totalReports}</Badge></div>
                         <div className="flex justify-between"><span>Distinct Users</span> <span className="font-medium">{data.numDistinctUsers}</span></div>
                         {data.lastReportedAt && <div className="flex justify-between"><span>Last Reported</span> <span className="font-medium">{format(new Date(data.lastReportedAt), 'PPp')}</span></div>}
@@ -134,7 +134,7 @@ export function AbuseIPDBResultViewer({ result }: AbuseIPDBResultViewerProps) {
                     <CardHeader>
                         <CardTitle className="text-base flex items-center gap-2 text-muted-foreground"><HardDrive /> Hostnames</CardTitle>
                     </CardHeader>
-                    <CardContent>
+                    <CardContent className="p-6">
                         {data.hostnames.length > 0 ? (
                             <ul className="space-y-1 font-code text-sm list-disc pl-5">
                                 {data.hostnames.map(h => <li key={h}>{h}</li>)}

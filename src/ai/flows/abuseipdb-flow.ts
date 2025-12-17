@@ -6,7 +6,6 @@
  */
 
 import { z } from 'zod';
-import { callSecurityTrails } from './securitytrails-flow';
 
 const AbuseIPDBInputSchema = z.object({
   ipAddress: z.string().describe('The IP address to query.'),
@@ -15,6 +14,21 @@ const AbuseIPDBInputSchema = z.object({
 export type AbuseIPDBInput = z.infer<typeof AbuseIPDBInputSchema>;
 
 export type AbuseIPDBOutput = any;
+
+async function getIpWhoisFromRDAP(ip: string): Promise<string | null> {
+    try {
+        const rdapResponse = await fetch(`https://rdap.arin.net/registry/ip/${ip}`);
+        if (rdapResponse.ok) {
+            const rdapJson = await rdapResponse.json();
+            return JSON.stringify(rdapJson, null, 2);
+        }
+        return `Could not fetch WHOIS from RDAP. Status: ${rdapResponse.status}`;
+    } catch (e: any) {
+        console.log(`Could not fetch WHOIS from RDAP for ${ip}: ${e.message}`);
+        return `Error fetching WHOIS from RDAP: ${e.message}`;
+    }
+}
+
 
 export async function callAbuseIPDB(input: AbuseIPDBInput): Promise<AbuseIPDBOutput> {
   const { ipAddress, apiKeys } = input;
@@ -39,26 +53,16 @@ export async function callAbuseIPDB(input: AbuseIPDBInput): Promise<AbuseIPDBOut
     mainData = await response.json();
   } catch (err: any) {
     console.error('Error calling AbuseIPDB API:', err.message);
-    // Re-throw to be caught by the main report generator
     throw new Error(err.message || 'Failed to fetch data from AbuseIPDB.');
   }
 
-  // Enrich with WHOIS data from SecurityTrails if the key is available
-  const securityTrailsKey = apiKeys?.securitytrails || process.env.SECURITYTRAILS_API_KEY;
-  if (securityTrailsKey && mainData.data) {
+  if (mainData.data) {
       try {
-          const whoisData = await callSecurityTrails({ resource: ipAddress, apiKeys: { securitytrails: securityTrailsKey }});
-          // SecurityTrails WHOIS for IP is directly in the response, not nested.
-          if (whoisData && whoisData.whois) {
-             mainData.data.whois = whoisData.whois;
-          } else {
-             // To ensure the WHOIS tab works, we format the object into a string.
-             const whoisText = Object.entries(whoisData).map(([key, value]) => `${key}: ${value}`).join('\n');
-             mainData.data.whois = whoisText;
-          }
+          const whoisData = await getIpWhoisFromRDAP(ipAddress);
+          mainData.data.whois = whoisData;
       } catch (e: any) {
-          console.log(`Could not fetch WHOIS from SecurityTrails for ${ipAddress}: ${e.message}`);
-          mainData.data.whois = 'Could not retrieve WHOIS data from SecurityTrails.';
+          console.log(`Could not fetch WHOIS from RDAP for ${ipAddress}: ${e.message}`);
+          mainData.data.whois = 'Could not retrieve WHOIS data.';
       }
   }
 
