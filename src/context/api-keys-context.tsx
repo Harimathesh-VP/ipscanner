@@ -8,10 +8,11 @@ type ApiKeys = { [key: string]: string };
 interface ApiKeysContextType {
   apiKeys: ApiKeys;
   setApiKey: (serviceId: string, key: string) => void;
+  removeApiKey: (serviceId: string) => void;
   lookupCount: number;
   incrementLookupCount: () => void;
   history: RequestLog[];
-  addToHistory: (log: Omit<RequestLog, 'id' | 'date'>) => void;
+  addToHistory: (log: Omit<RequestLog, 'id' | 'date'> | RequestLog) => void;
   clearHistory: () => void;
 }
 
@@ -25,12 +26,26 @@ export function ApiKeysProvider({ children }: { children: ReactNode }) {
   const setApiKey = (serviceId: string, key: string) => {
     setApiKeys((prev) => ({ ...prev, [serviceId]: key }));
   };
+  
+  const removeApiKey = (serviceId: string) => {
+    setApiKeys((prev) => {
+        const newKeys = {...prev};
+        delete newKeys[serviceId];
+        return newKeys;
+    });
+  }
 
   const incrementLookupCount = useCallback(() => {
     setLookupCount((prev) => prev + 1);
   }, []);
 
-  const addToHistory = useCallback((log: Omit<RequestLog, 'id' | 'date'>) => {
+  const addToHistory = useCallback((log: Omit<RequestLog, 'id' | 'date'> | RequestLog) => {
+    // If the log already has an ID, it's being imported.
+    if ('id' in log) {
+      setHistory((prev) => [log as RequestLog, ...prev]);
+      return;
+    }
+    
     const newLog: RequestLog = {
       ...log,
       id: new Date().getTime().toString(),
@@ -44,7 +59,7 @@ export function ApiKeysProvider({ children }: { children: ReactNode }) {
   }, []);
 
   return (
-    <ApiKeysContext.Provider value={{ apiKeys, setApiKey, lookupCount, incrementLookupCount, history, addToHistory, clearHistory }}>
+    <ApiKeysContext.Provider value={{ apiKeys, setApiKey, removeApiKey, lookupCount, incrementLookupCount, history, addToHistory, clearHistory }}>
       {children}
     </ApiKeysContext.Provider>
   );

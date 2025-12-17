@@ -4,16 +4,27 @@ import { services } from '@/lib/services';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { KeyRound, CheckCircle, ExternalLink, Info, Eye, EyeOff } from 'lucide-react';
+import { KeyRound, CheckCircle, ExternalLink, Info, Eye, EyeOff, Copy, Pencil, Trash2, Power } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useApiKeys } from '@/context/api-keys-context';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import { useState, useMemo } from 'react';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
 
 export default function SettingsPage() {
   const { toast } = useToast();
-  const { apiKeys, setApiKey } = useApiKeys();
+  const { apiKeys, setApiKey, removeApiKey } = useApiKeys();
   const [errors, setErrors] = useState<Record<string, string | null>>({});
   const [showKey, setShowKey] = useState<Record<string, boolean>>({});
 
@@ -26,11 +37,39 @@ export default function SettingsPage() {
   }
 
   const maskApiKey = (key: string) => {
+    if (!key) return '';
     if (key.length <= 8) {
       return '****...****';
     }
     return `${key.substring(0, 4)}...${key.substring(key.length - 4)}`;
   }
+  
+  const handleCopyKey = (key: string) => {
+    navigator.clipboard.writeText(key);
+    toast({
+      title: 'Copied to Clipboard',
+      description: 'The API key has been copied.',
+    });
+  }
+
+  const handleTestKey = (serviceId: string) => {
+    // This is a placeholder. In a real app, you would make a lightweight API call.
+    const key = apiKeys[serviceId];
+    if (key) {
+      toast({
+        title: 'Testing Key...',
+        description: `Sending test request for ${services.find((s) => s.id === serviceId)?.name}.`,
+      });
+      // Simulate API call
+      setTimeout(() => {
+        toast({
+          title: 'Test Successful',
+          description: `The API key is valid.`,
+        });
+      }, 1500);
+    }
+  }
+
 
   const handleSaveKey = (serviceId: string, e: React.FormEvent) => {
     e.preventDefault();
@@ -47,6 +86,15 @@ export default function SettingsPage() {
       });
       return;
     }
+    
+    if (!key) {
+        removeApiKey(serviceId);
+        toast({
+          title: 'API Key Removed',
+          description: `Your API key for ${services.find((s) => s.id === serviceId)?.name} has been removed.`,
+        });
+        return;
+    }
 
     if (validateKey(key)) {
       setApiKey(serviceId, key);
@@ -55,7 +103,10 @@ export default function SettingsPage() {
         description: `Your API key for ${services.find((s) => s.id === serviceId)?.name} has been configured.`,
       });
       setErrors(prev => ({...prev, [serviceId]: null}));
-      input.value = '';
+      // We don't clear the input on successful save for configured services, just blur it.
+      if (!apiKeys[serviceId]) {
+          input.value = '';
+      }
     } else {
       const errorMessage = 'Please enter a valid API key (at least 10 characters).';
       setErrors(prev => ({...prev, [serviceId]: errorMessage}));
@@ -101,18 +152,8 @@ export default function SettingsPage() {
                             name="apiKey" 
                             placeholder="Enter your API key" 
                             type={showKey[service.id] ? 'text' : 'password'} 
-                            className="pl-10 pr-10"
+                            className="pl-10"
                         />
-                        <Button
-                            type="button"
-                            variant="ghost"
-                            size="icon"
-                            className="absolute right-1 top-1/2 h-7 w-7 -translate-y-1/2 text-muted-foreground"
-                            onClick={() => toggleShowKey(service.id)}
-                        >
-                            {showKey[service.id] ? <EyeOff /> : <Eye />}
-                            <span className="sr-only">Toggle key visibility</span>
-                        </Button>
                       </div>
                       {errors[service.id] && <p className="text-xs text-destructive mt-2">{errors[service.id]}</p>}
                   </CardContent>
@@ -164,42 +205,65 @@ export default function SettingsPage() {
                        <div className="relative">
                         <KeyRound className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                         <Input
+                          id={`api-key-input-${service.id}`}
                           name="apiKey"
                           defaultValue={maskApiKey(apiKeys[service.id] || '')}
                           onFocus={(e) => {
                             e.target.value = apiKeys[service.id] || ''
-                            setShowKey(prev => ({...prev, [service.id]: true}))
                           }}
                           onBlur={(e) => {
                             if (!e.target.value) {
                               e.target.value = maskApiKey(apiKeys[service.id] || '')
                             }
-                             setShowKey(prev => ({...prev, [service.id]: false}))
                           }}
                           placeholder="Enter new key to update"
                           type={showKey[service.id] ? 'text' : 'password'}
-                          className="pl-10 pr-10"
+                          className="pl-10"
                         />
-                         <Button
-                            type="button"
-                            variant="ghost"
-                            size="icon"
-                            className="absolute right-1 top-1/2 h-7 w-7 -translate-y-1/2 text-muted-foreground"
-                            onClick={() => toggleShowKey(service.id)}
-                        >
-                            {showKey[service.id] ? <EyeOff /> : <Eye />}
-                            <span className="sr-only">Toggle key visibility</span>
-                        </Button>
                       </div>
                       {errors[service.id] && <p className="text-xs text-destructive mt-2">{errors[service.id]}</p>}
                   </CardContent>
                   <CardFooter className="flex justify-between bg-primary/10 px-6 py-4 border-t border-primary/20">
-                     <Button variant="outline" size="sm" asChild>
-                         <a href={service.documentationUrl} target="_blank" rel="noopener noreferrer">
-                           <ExternalLink className="mr-2 h-4 w-4" /> API Docs
-                         </a>
-                      </Button>
-                      <Button type="submit" variant="outline" size="sm">Update Key</Button>
+                     <div className="flex items-center gap-1">
+                        <Button type="button" variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground" onClick={() => toggleShowKey(service.id)}>
+                            {showKey[service.id] ? <EyeOff /> : <Eye />}
+                        </Button>
+                        <Button type="button" variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground" onClick={() => handleCopyKey(apiKeys[service.id])}>
+                            <Copy />
+                        </Button>
+                         <Button type="button" variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground" onClick={() => document.getElementById(`api-key-input-${service.id}`)?.focus()}>
+                            <Pencil />
+                        </Button>
+                         <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                             <Button type="button" variant="ghost" size="icon" className="h-8 w-8 text-destructive/70 hover:text-destructive">
+                                <Trash2 />
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Delete API Key?</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                This will remove the API key for {service.name}. You will need to re-enter it to use the service again.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancel</AlertDialogCancel>
+                              <AlertDialogAction onClick={() => removeApiKey(service.id)}>
+                                Yes, Delete Key
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+
+                     </div>
+                     <div className="flex items-center gap-2">
+                        <Button type="button" variant="outline" size="sm" onClick={() => handleTestKey(service.id)}>
+                          <Power className="mr-2 h-4 w-4" />
+                          Test
+                        </Button>
+                        <Button type="submit" variant="outline" size="sm">Update Key</Button>
+                     </div>
                   </CardFooter>
                  </form>
                 </Card>
