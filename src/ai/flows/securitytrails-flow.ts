@@ -24,7 +24,16 @@ export async function callSecurityTrails(input: SecurityTrailsInput): Promise<Se
   }
 
   const isIp = /^\d{1,3}(\.\d{1,3}){3}$/.test(resource);
-  const endpoint = `https://api.securitytrails.com/v1/${isIp ? 'ip' : 'domain'}/${resource}`;
+  let endpoint;
+  
+  if (isIp) {
+      // For IPs, SecurityTrails only supports getting associated domains.
+      endpoint = `https://api.securitytrails.com/v1/ip/${resource}/domains`;
+  } else {
+      // For domains, we fetch the full domain details.
+      endpoint = `https://api.securitytrails.com/v1/domain/${resource}`;
+  }
+
 
   try {
     const mainResponse = await fetch(endpoint, {
@@ -34,6 +43,13 @@ export async function callSecurityTrails(input: SecurityTrailsInput): Promise<Se
       },
     });
 
+    if (mainResponse.status === 404) {
+        return { 
+            status: "unsupported_lookup",
+            message: `SecurityTrails does not support this lookup type for: ${resource}`
+        };
+    }
+
     if (!mainResponse.ok) {
        const errorData = await mainResponse.json();
        throw new Error(errorData.message || `SecurityTrails API error! status: ${mainResponse.status}`);
@@ -41,11 +57,9 @@ export async function callSecurityTrails(input: SecurityTrailsInput): Promise<Se
     
     const data = await mainResponse.json();
     
-    // For both IPs and domains, fetch WHOIS separately for consistency,
-    // as sometimes it's nested and sometimes it's not.
-    // This also avoids making simultaneous calls that might fail.
-    if (!data.whois) {
-        const whoisResponse = await fetch(`${endpoint}/whois`, {
+    // Only attempt to fetch WHOIS for domains, as it's not supported for IPs directly.
+    if (!isIp) {
+        const whoisResponse = await fetch(`https://api.securitytrails.com/v1/domain/${resource}/whois`, {
             headers: { 'APIKEY': key, 'Accept': 'application/json' },
         });
         if (whoisResponse.ok) {
