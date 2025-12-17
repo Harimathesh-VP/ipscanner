@@ -47,19 +47,26 @@ export async function callAlienVault(input: AlienVaultInput): Promise<AlienVault
     });
 
     if (!response.ok) {
+       if (response.status === 404) {
+         return { error: `Indicator '${resource}' not found in AlienVault OTX.` };
+       }
       throw new Error(`AlienVault OTX API error! status: ${response.status}`);
     }
     
-    const data = await response.json();
+    let data = await response.json();
 
-    // Also fetch whois for domains
-    if (resourceType === 'domain' && data.whois) {
-        const whoisResponse = await fetch(data.whois, {
-            headers: { 'X-OTX-API-KEY': key, 'Accept': 'application/json' }
-        });
-        if(whoisResponse.ok) {
-            const whoisText = await whoisResponse.text();
-            data.whois_data = whoisText;
+    // Also fetch whois for domains/IPs if the link is present
+    if (data.whois) {
+        try {
+            const whoisResponse = await fetch(data.whois, {
+                headers: { 'X-OTX-API-KEY': key } // 'Accept' is not needed, returns text
+            });
+            if(whoisResponse.ok) {
+                const whoisText = await whoisResponse.text();
+                data.whois_data = whoisText;
+            }
+        } catch (e: any) {
+            console.log(`Could not fetch WHOIS from AlienVault for ${resource}: ${e.message}`);
         }
     }
 
