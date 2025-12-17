@@ -6,6 +6,7 @@
  */
 
 import { z } from 'zod';
+import { callVirusTotal } from './virustotal-flow';
 
 const AlienVaultInputSchema = z.object({
   resource: z.string().describe('The IP, domain, or hash to query.'),
@@ -14,6 +15,23 @@ const AlienVaultInputSchema = z.object({
 export type AlienVaultInput = z.infer<typeof AlienVaultInputSchema>;
 
 export type AlienVaultOutput = any;
+
+async function getIpWhoisFromRDAP(ip: string): Promise<string | null> {
+    try {
+        // Using ARIN's RDAP server as the primary. A full implementation could cycle through regional registries.
+        const rdapResponse = await fetch(`https://rdap.arin.net/registry/ip/${ip}`);
+        if (rdapResponse.ok) {
+            const rdapJson = await rdapResponse.json();
+            // Convert JSON to a readable string format for display
+            return JSON.stringify(rdapJson, null, 2);
+        }
+        return `Could not fetch WHOIS from RDAP. Status: ${rdapResponse.status}`;
+    } catch (e: any) {
+        console.log(`Could not fetch WHOIS from RDAP for ${ip}: ${e.message}`);
+        return `Error fetching WHOIS from RDAP: ${e.message}`;
+    }
+}
+
 
 export async function callAlienVault(input: AlienVaultInput): Promise<AlienVaultOutput> {
   const { resource, apiKeys } = input;
@@ -24,14 +42,15 @@ export async function callAlienVault(input: AlienVaultInput): Promise<AlienVault
 
   let resourceType;
   // Basic check for IP address
-  if (/^\d{1,3}(\.\d{1,3}){3}$/.test(resource)) {
+  const isIp = /^\d{1,3}(\.\d{1,3}){3}$/.test(resource);
+  const isDomain = /^[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(resource);
+
+  if (isIp) {
     resourceType = 'IPv4';
   } 
-  // Basic check for domain
-  else if (/^[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(resource)) {
+  else if (isDomain) {
     resourceType = 'domain';
   } 
-  // Assume hash otherwise
   else {
     resourceType = 'file';
   }
@@ -55,18 +74,22 @@ export async function callAlienVault(input: AlienVaultInput): Promise<AlienVault
     
     let data = await response.json();
 
-    // Also fetch whois for domains/IPs if the link is present
-    if (data.whois) {
+    // The 'whois' field from AlienVault is a URL. We should use a proper WHOIS service instead.
+    // For domains, we can use VirusTotal's WHOIS. For IPs, we'll use RDAP.
+    if (isDomain) {
         try {
-            const whoisResponse = await fetch(data.whois, {
-                headers: { 'X-OTX-API-KEY': key } // 'Accept' is not needed, returns text
-            });
-            if(whoisResponse.ok) {
-                const whoisText = await whoisResponse.text();
-                data.whois_data = whoisText;
+            const vtData = await callVirusTotal({ resource, apiKeys });
+            if (vtData?.data?.attributes?.whois) {
+                 data.whois_data = vtData.data.attributes.whois;
             }
         } catch (e: any) {
-            console.log(`Could not fetch WHOIS from AlienVault for ${resource}: ${e.message}`);
+            console.log(`Could not fetch WHOIS from VirusTotal for ${resource}: ${e.message}`);
+        }
+    } else if (isIp) {
+        // For IPs, use the RDAP protocol instead of following the DomainTools link.
+        const whoisData = await getIpWhoisFromRDAP(resource);
+        if (whoisData) {
+            data.whois_data = whoisData;
         }
     }
 
