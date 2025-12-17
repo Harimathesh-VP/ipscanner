@@ -150,9 +150,6 @@ export default function SettingsPage() {
         description: `Your API key for ${service.name} has been configured.`,
       });
       setErrors(prev => ({...prev, [serviceId]: null}));
-      
-      // Test the key right after saving it
-      handleTestKey(serviceId);
     } else {
       const errorMessage = 'Please enter a valid API key (at least 10 characters).';
       setErrors(prev => ({...prev, [serviceId]: errorMessage}));
@@ -209,7 +206,7 @@ export default function SettingsPage() {
                            <ExternalLink className="mr-2 h-4 w-4" /> API Docs
                          </a>
                       </Button>
-                      <Button type="submit" size="sm">Save & Test Key</Button>
+                      <Button type="submit" size="sm">Save Key</Button>
                    </CardFooter>
                 </form>
               </Card>
