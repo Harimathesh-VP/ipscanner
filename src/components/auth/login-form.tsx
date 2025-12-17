@@ -18,26 +18,25 @@ import { Eye, EyeOff } from 'lucide-react';
 export function LoginForm() {
   const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
+  const [isRegisterView, setIsRegisterView] = useState(false);
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    router.replace('/dashboard');
-  };
-  
-  const handleRegister = (e: React.FormEvent) => {
-    e.preventDefault();
+    // Both login and register will redirect to dashboard for this demo
     router.replace('/dashboard');
   };
 
   return (
     <Card className="w-full max-w-sm border-0 shadow-none sm:border sm:shadow-sm">
-      <form onSubmit={handleLogin}>
+      <form onSubmit={handleSubmit}>
         <CardHeader className="text-center">
           <CardTitle className="text-3xl font-bold tracking-tight font-headline">
-            Welcome Back
+            {isRegisterView ? 'Create an Account' : 'Welcome Back'}
           </CardTitle>
           <CardDescription>
-            Enter your credentials to access your account.
+            {isRegisterView
+              ? 'Enter your details to get started.'
+              : 'Enter your credentials to access your account.'}
           </CardDescription>
         </CardHeader>
         <CardContent className="grid gap-4">
@@ -79,10 +78,18 @@ export function LoginForm() {
         </CardContent>
         <CardFooter className="flex flex-col gap-4">
           <Button className="w-full" type="submit" size="lg">
-            Sign in
+            {isRegisterView ? 'Register' : 'Sign in'}
           </Button>
-          <Button className="w-full" variant="outline" size="lg" onClick={handleRegister}>
-            Register
+          <Button
+            className="w-full"
+            variant="outline"
+            size="lg"
+            type="button"
+            onClick={() => setIsRegisterView(!isRegisterView)}
+          >
+            {isRegisterView
+              ? 'Already have an account? Sign In'
+              : 'Create an account'}
           </Button>
         </CardFooter>
       </form>
