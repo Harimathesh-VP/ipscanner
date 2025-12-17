@@ -36,7 +36,7 @@ export default function HomePage() {
       <main className="flex-1">
         <section className="w-full py-12 md:py-24 lg:py-32 xl:py-48">
           <div className="container px-4 md:px-6">
-            <div className="flex flex-col justify-center space-y-6 text-center">
+            <div className="flex flex-col items-center justify-center space-y-6 text-center">
               <div className="space-y-4">
                  <p className="text-sm font-medium text-primary tracking-widest uppercase">Optimize Growth</p>
                 <h1 className="text-4xl font-bold tracking-tighter font-headline sm:text-5xl md:text-6xl lg:text-7xl/none">
