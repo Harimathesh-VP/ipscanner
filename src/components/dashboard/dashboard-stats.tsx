@@ -3,17 +3,9 @@
 import { KeyRound, Search, History } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useApiKeys } from '@/context/api-keys-context';
-import { useState, useEffect } from 'react';
 
 export function DashboardStats() {
-  const { apiKeys, lookupCount } = useApiKeys();
-  const [historyCount, setHistoryCount] = useState(0);
-
-  // In a real app, this would come from a persistent store.
-  useEffect(() => {
-    // For now, we'll keep it at 0.
-    setHistoryCount(0);
-  }, []);
+  const { apiKeys, lookupCount, history } = useApiKeys();
 
   const configuredKeysCount = Object.keys(apiKeys).length;
 
@@ -32,7 +24,7 @@ export function DashboardStats() {
     },
     {
       title: 'Search History',
-      value: historyCount,
+      value: history.length,
       icon: History,
       description: 'Total logged requests',
     },

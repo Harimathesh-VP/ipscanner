@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import type { RequestLog } from '@/lib/types';
+import { useApiKeys } from '@/context/api-keys-context';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -31,7 +32,7 @@ import { useToast } from '@/hooks/use-toast';
 
 export default function HistoryPage() {
   const [searchQuery, setSearchQuery] = useState('');
-  const [logs, setLogs] = useState<RequestLog[]>([]);
+  const { history: logs, clearHistory, addToHistory } = useApiKeys();
   const { toast } = useToast();
 
   const filteredLogs = logs.filter(log =>
@@ -40,6 +41,7 @@ export default function HistoryPage() {
   );
   
   const handleExportJson = () => {
+    if (filteredLogs.length === 0) return;
     const jsonString = `data:text/json;charset=utf-8,${encodeURIComponent(
       JSON.stringify(filteredLogs, null, 2)
     )}`;
@@ -124,7 +126,7 @@ export default function HistoryPage() {
             throw new Error("Invalid log format in the imported file.");
         }
 
-        setLogs(prevLogs => [...prevLogs, ...importedLogs]);
+        importedLogs.forEach(log => addToHistory(log));
         toast({
           title: "Import Successful",
           description: `${importedLogs.length} logs have been imported.`,
@@ -143,7 +145,7 @@ export default function HistoryPage() {
   };
   
   const handleClearHistory = () => {
-    setLogs([]);
+    clearHistory();
   };
 
   return (
@@ -173,7 +175,7 @@ export default function HistoryPage() {
                
                <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="outline">
+                    <Button variant="outline" disabled={logs.length === 0}>
                       <Download className="mr-2 h-4 w-4" /> Export <ChevronDown className="ml-2 h-4 w-4" />
                     </Button>
                   </DropdownMenuTrigger>

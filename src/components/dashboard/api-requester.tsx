@@ -53,7 +53,7 @@ export function ApiRequester() {
   const [loading, setLoading] = useState<Record<string, boolean>>({});
   const [results, setResults] = useState<Record<string, any>>({});
   const { toast } = useToast();
-  const { apiKeys, incrementLookupCount } = useApiKeys();
+  const { apiKeys, incrementLookupCount, addToHistory } = useApiKeys();
 
   const handleInputChange = (serviceId: string, value: string) => {
     setInputValues((prev) => ({ ...prev, [serviceId]: value }));
@@ -68,6 +68,9 @@ export function ApiRequester() {
   };
 
   const handleSubmit = async (serviceId: string) => {
+    const service = services.find(s => s.id === serviceId);
+    if (!service) return;
+
     const inputValue = inputValues[serviceId];
     if (!inputValue) {
       toast({
@@ -93,7 +96,7 @@ export function ApiRequester() {
       toast({
         variant: 'destructive',
         title: 'API Key Required',
-        description: `Please configure the API key for ${services.find(s => s.id === serviceId)?.name} in settings.`,
+        description: `Please configure the API key for ${service.name} in settings.`,
       });
       return;
     }
@@ -103,35 +106,38 @@ export function ApiRequester() {
     setResults((prev) => ({ ...prev, [serviceId]: null }));
     incrementLookupCount();
 
+    let result;
     try {
-      const service = services.find(s => s.id === serviceId);
       let serviceInput;
       const inputPayload = { apiKeys };
 
-      if (service?.inputType === 'ipAddress') {
+      if (service.inputType === 'ipAddress') {
         serviceInput = { ...inputPayload, ipAddress: inputValue };
-      } else if (service?.inputType === 'query') {
+      } else if (service.inputType === 'query') {
         serviceInput = { ...inputPayload, query: inputValue };
       } else {
         serviceInput = { ...inputPayload, resource: inputValue };
       }
 
-      const result = await flow(serviceInput);
+      result = await flow(serviceInput);
       setResults((prev) => ({
         ...prev,
         [serviceId]: result,
       }));
+      addToHistory({ service: service.name, target: inputValue, status: 'Success', response: result });
     } catch (error: any) {
       console.error(`Error fetching from ${serviceId}:`, error);
+      const errorResult = { error: error.message };
       toast({
         variant: 'destructive',
         title: 'API Error',
-        description: error.message || `Could not fetch data from ${services.find(s => s.id === serviceId)?.name}.`,
+        description: error.message || `Could not fetch data from ${service.name}.`,
       });
       setResults((prev) => ({
         ...prev,
-        [serviceId]: { error: error.message },
+        [serviceId]: errorResult,
       }));
+      addToHistory({ service: service.name, target: inputValue, status: 'Failed', response: errorResult });
     } finally {
       setLoading((prev) => ({ ...prev, [serviceId]: false }));
     }
