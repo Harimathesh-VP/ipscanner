@@ -27,7 +27,7 @@ export async function callSecurityTrails(input: SecurityTrailsInput): Promise<Se
   let endpoint;
   
   if (isIp) {
-      // For IPs, SecurityTrails only supports getting associated domains.
+      // For IPs, SecurityTrails supports getting associated domains (reverse IP).
       endpoint = `https://api.securitytrails.com/v1/ip/${resource}/domains`;
   } else {
       // For domains, we fetch the full domain details.
@@ -55,7 +55,7 @@ export async function callSecurityTrails(input: SecurityTrailsInput): Promise<Se
        throw new Error(errorData.message || `SecurityTrails API error! status: ${mainResponse.status}`);
     }
     
-    const data = await mainResponse.json();
+    let data = await mainResponse.json();
     
     // Only attempt to fetch WHOIS for domains, as it's not supported for IPs directly.
     if (!isIp) {
@@ -63,6 +63,7 @@ export async function callSecurityTrails(input: SecurityTrailsInput): Promise<Se
             headers: { 'APIKEY': key, 'Accept': 'application/json' },
         });
         if (whoisResponse.ok) {
+            // Nest the whois data into the main response object
             data.whois = await whoisResponse.json();
         }
     }
