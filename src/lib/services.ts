@@ -1,3 +1,4 @@
+
 import type { FC, SVGProps } from 'react';
 import { VirusTotalLogo, AbuseIPDBLogo, SecurityTrailsLogo, GreyNoiseLogo, ShodanLogo, AlienVaultLogo, IPQualityScoreLogo, CiscoTalosLogo, IBMXForceLogo, GoogleSafeBrowsingLogo, APIVoidLogo, WhoisXMLLogo, SpamhausLogo, NeutrinoAPILogo, ThreatMinerLogo, FraudGuardLogo, ZscalerLogo, WebrootLogo, RiskIQLogo } from '@/components/logos';
 import type { Service } from './types';
@@ -111,7 +112,7 @@ export const services: Service[] = [
     description: 'Aggregated reputation and blacklist checks for IPs, domains, and URLs.',
     placeholder: 'Enter an IP, domain, or URL',
     inputType: 'resource',
-    documentationUrl: 'https://www.apivoid.com/documentation/',
+    documentationUrl: 'https://www.apivoid.com/api/',
   },
   {
     id: 'whoisxml',
@@ -181,7 +182,7 @@ export const services: Service[] = [
     description: 'Commercial reputation and categorization for IPs, domains, and URLs.',
     placeholder: 'Enter an IP, domain, or URL',
     inputType: 'resource',
-    documentationUrl: 'https://www.brightcloud.com/support/api-documentation',
+    documentationUrl: 'https://www.brightcloud.com/support/api-documentation.php',
   },
   {
     id: 'riskiq',
