@@ -1,7 +1,7 @@
 'use client';
 
 import { services } from '@/lib/services';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ExternalLink, ShoppingCart, TrendingUp } from 'lucide-react';
