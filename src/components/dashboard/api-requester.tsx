@@ -14,7 +14,7 @@ import { callAbuseIPDB } from '@/ai/flows/abuseipdb-flow';
 import { callSecurityTrails } from '@/ai/flows/securitytrails-flow';
 import { callGreyNoise } from '@/ai/flows/greynoise-flow';
 import { callShodan } from '@/ai/flows/shodan-flow';
-import { callAlienVault } from '@/aiflows/alienvault-flow';
+import { callAlienVault } from '@/ai/flows/alienvault-flow';
 import { callIPQualityScore } from '@/ai/flows/ipqualityscore-flow';
 import { callCiscoTalos } from '@/ai/flows/ciscotalos-flow';
 import { callIBMForce } from '@/ai/flows/ibm-xforce-flow';
@@ -186,10 +186,10 @@ export function ApiRequester() {
         {Object.entries(serviceCategories).map(([category, serviceIds]) => (
             <div key={category}>
                 <p className="text-sm text-muted-foreground font-semibold mb-2 px-1">{category}</p>
-                <TabsList className="grid h-auto w-full grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-10">
+                <TabsList className="grid h-auto w-full grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-10">
                     {serviceIds.map(id => services.find(s => s.id === id)).filter(Boolean).map((service) => (
-                      <TabsTrigger key={service!.id} value={service!.id} className="flex-col h-14 gap-1">
-                         <service!.icon className="h-6 w-6" />
+                      <TabsTrigger key={service!.id} value={service!.id} className="flex-col h-14 gap-2">
+                         <service.icon className="h-6 w-6" />
                          <span className="text-xs">{service!.name}</span>
                       </TabsTrigger>
                     ))}
