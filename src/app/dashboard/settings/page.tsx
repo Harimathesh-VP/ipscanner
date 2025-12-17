@@ -307,7 +307,7 @@ export default function SettingsPage() {
                         <Button type="button" variant="outline" size="sm" onClick={() => handleTestKey(service.id)} disabled={testing[service.id]}>
                           {testing[service.id] ? "Testing..." : <><Power className="mr-2 h-4 w-4" />Test</>}
                         </Button>
-                        <Button type="submit" variant="outline" size="sm">Update Key</Button>
+                        <Button type="submit" variant="outline" size="sm">Update</Button>
                      </div>
                   </CardFooter>
                  </form>

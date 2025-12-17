@@ -245,7 +245,7 @@ export default function HistoryPage() {
                   <AlertDialog>
                     <AlertDialogTrigger asChild>
                       <Button variant="destructive" disabled={logs.length === 0}>
-                        <Trash2 className="mr-2 h-4 w-4" /> Clear History
+                        <Trash2 className="mr-2 h-4 w-4" /> Clear
                       </Button>
                     </AlertDialogTrigger>
                     <AlertDialogContent>
