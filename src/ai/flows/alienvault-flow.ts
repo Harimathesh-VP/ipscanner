@@ -16,26 +16,32 @@ export type AlienVaultInput = z.infer<typeof AlienVaultInputSchema>;
 
 export type AlienVaultOutput = any;
 
-function formatRdapToWhois(rdapJson: any): string {
+function formatRdapToWhois(rdap: any): string {
     let output = '';
-    const pad = (s: string) => s.padEnd(16, ' ');
+    const pad = (key: string) => key.padEnd(16, ' ');
 
-    if (rdapJson.handle) output += `${pad('NetHandle:')} ${rdapJson.handle}\n`;
-    if (rdapJson.startAddress && rdapJson.endAddress) output += `${pad('NetRange:')} ${rdapJson.startAddress} - ${rdapJson.endAddress}\n`;
-    if (rdapJson.ipVersion) output += `${pad('IPVersion:')} ${rdapJson.ipVersion}\n`;
-    if (rdapJson.name) output += `${pad('NetName:')} ${rdapJson.name}\n`;
-    if (rdapJson.parentHandle) output += `${pad('Parent:')} ${rdapJson.parentHandle}\n`;
-    if (rdapJson.objectClassName) output += `${pad('ObjectClass:')} ${rdapJson.objectClassName}\n`;
+    const main = [
+        { key: 'NetRange', value: rdap.startAddress && rdap.endAddress ? `${rdap.startAddress} - ${rdap.endAddress}` : undefined },
+        { key: 'CIDR', value: rdap.cidr0_cidrs?.[0]?.v4prefix },
+        { key: 'NetName', value: rdap.name },
+        { key: 'NetHandle', value: rdap.handle },
+        { key: 'Parent', value: rdap.parentHandle },
+        { key: 'NetType', value: rdap.type },
+        { key: 'OriginAS', value: Array.isArray(rdap.autnums) && rdap.autnums.length > 0 ? rdap.autnums.map((a: any) => `AS${a.handle}`).join(', ') : undefined },
+        { key: 'Organization', value: rdap.entities?.find((e: any) => e.roles.includes('registrant'))?.vcardArray?.[1]?.find((v: any) => v[0] === 'fn')?.[3] },
+        { key: 'RegDate', value: rdap.events?.find((e: any) => e.eventAction === 'registration')?.eventDate },
+        { key: 'Updated', value: rdap.events?.find((e: any) => e.eventAction === 'last changed')?.eventDate },
+        { key: 'Ref', value: rdap.links?.find((l: any) => l.rel === 'self')?.href },
+    ];
 
-    if (rdapJson.events) {
-        const regDate = rdapJson.events.find((e: any) => e.eventAction === 'registration');
-        const updateDate = rdapJson.events.find((e: any) => e.eventAction === 'last changed');
-        if (regDate) output += `${pad('RegDate:')} ${new Date(regDate.eventDate).toISOString()}\n`;
-        if (updateDate) output += `${pad('Updated:')} ${new Date(updateDate.eventDate).toISOString()}\n`;
-    }
+    main.forEach(item => {
+        if (item.value) {
+            output += `${pad(item.key + ':')} ${item.value}\n`;
+        }
+    });
 
-    if (rdapJson.remarks) {
-        rdapJson.remarks.forEach((remark: any) => {
+    if (rdap.remarks) {
+        rdap.remarks.forEach((remark: any) => {
             output += `${pad('Comment:')} ${remark.title || ''}\n`;
             if (remark.description) {
                 remark.description.forEach((desc: string) => {
@@ -45,37 +51,80 @@ function formatRdapToWhois(rdapJson: any): string {
         });
     }
 
-    if (rdapJson.entities) {
-        rdapJson.entities.forEach((entity: any) => {
-            output += '\n';
-            if (!entity.vcardArray || !Array.isArray(entity.vcardArray)) return;
-            const vcard = entity.vcardArray[1];
+    const processEntity = (entity: any) => {
+        let entityOutput = '\n';
+        if (!entity.vcardArray || !Array.isArray(entity.vcardArray)) return '';
+        const vcard = entity.vcardArray[1];
 
-            const name = vcard.find((v: any) => v[0] === 'fn')?.[3];
-            const email = vcard.find((v: any) => v[0] === 'email')?.[3];
-            const addressVcard = vcard.find((v: any) => v[0] === 'adr');
-            const phone = vcard.find((v: any) => v[0] === 'tel')?.[3];
-            
-            const roles = entity.roles?.map((r: string) => r.charAt(0).toUpperCase() + r.slice(1)).join(', ');
-            const orgTitle = name ? `${name} (${entity.handle})` : entity.handle;
-            output += `Organisation:   ${orgTitle} ${roles ? `[${roles}]`: ''}\n`;
+        const orgName = vcard.find((v: any) => v[0] === 'fn')?.[3];
+        const orgId = entity.handle;
 
-            if (addressVcard && Array.isArray(addressVcard[3])) {
-                const addressParts = addressVcard[3];
-                const [street, city, state, zip, country] = addressParts.map(part => part || null);
+        const role = entity.roles?.[0] ? `Org${entity.roles[0].charAt(0).toUpperCase() + entity.roles[0].slice(1)}` : 'Org';
 
-                if (street) output += `${pad('Address:')} ${street}\n`;
-                if (city && state && zip) output += `${pad('')} ${city}, ${state} ${zip}\n`;
-                if (country) output += `${pad('')} ${country}\n`;
-            }
+        if (orgName && orgId) {
+           entityOutput += `${pad(role + 'Name:')} ${orgName}\n`;
+           entityOutput += `${pad(role + 'ID:')} ${orgId}\n`;
+        }
+        
+        const adr = vcard.find((v: any) => v[0] === 'adr')?.[3];
+        if (adr && Array.isArray(adr)) {
+            const addressParts = {
+                street: adr[2],
+                city: adr[3],
+                state: adr[4],
+                zip: adr[5],
+                country: adr[6]
+            };
+            if(addressParts.street) entityOutput += `${pad('Address:')} ${addressParts.street}\n`;
+            if(addressParts.city) entityOutput += `${pad('City:')} ${addressParts.city}\n`;
+            if(addressParts.state) entityOutput += `${pad('StateProv:')} ${addressParts.state}\n`;
+            if(addressParts.zip) entityOutput += `${pad('PostalCode:')} ${addressParts.zip}\n`;
+            if(addressParts.country) entityOutput += `${pad('Country:')} ${addressParts.country}\n`;
+        }
 
-            if (phone) output += `${pad('Phone:')} ${phone}\n`;
-            if (email) output += `${pad('Email:')} ${email}\n`;
+        const regDate = entity.events?.find((e: any) => e.eventAction === 'registration')?.eventDate;
+        const lastChanged = entity.events?.find((e: any) => e.eventAction === 'last changed')?.eventDate;
+        if(regDate) entityOutput += `${pad('RegDate:')} ${regDate}\n`;
+        if(lastChanged) entityOutput += `${pad('Updated:')} ${lastChanged}\n`;
 
-        });
+        if (entity.remarks) {
+            entity.remarks.forEach((remark: any) => {
+                remark.description.forEach((desc: string) => {
+                     entityOutput += `${pad('Comment:')} ${desc}\n`;
+                });
+            });
+        }
+
+
+        const phone = vcard.find((v: any) => v[0] === 'tel')?.[3];
+        if (phone) entityOutput += `${pad(role + 'Phone:')} ${phone.replace('tel:', '')}\n`;
+
+        const email = vcard.find((v: any) => v[0] === 'email')?.[3];
+        if (email) entityOutput += `${pad(role + 'Email:')} ${email}\n`;
+        
+        const ref = entity.links?.find((l: any) => l.rel === 'self')?.href;
+        if (ref) entityOutput += `${pad(role + 'Ref:')} ${ref}\n`;
+        
+        // For specific contact handles like OrgTech, OrgAbuse
+        if (entity.roles?.some((r: string) => ['technical', 'abuse'].includes(r))) {
+            const handleName = `${role}Handle:`;
+            entityOutput = `\n${pad(handleName)} ${orgId}\n` + entityOutput.trimStart();
+        }
+
+        return entityOutput;
+    };
+    
+    if (rdap.entities) {
+        const registrant = rdap.entities.find((e: any) => e.roles.includes('registrant'));
+        const tech = rdap.entities.find((e: any) => e.roles.includes('technical'));
+        const abuse = rdap.entities.find((e: any) => e.roles.includes('abuse'));
+        
+        if(registrant) output += processEntity(registrant);
+        if(tech) output += processEntity(tech);
+        if(abuse) output += processEntity(abuse);
     }
 
-    return output;
+    return output.trim();
 }
 
 
