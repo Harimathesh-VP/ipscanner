@@ -9,10 +9,9 @@ export function DashboardStats() {
   const { apiKeys, lookupCount } = useApiKeys();
   const [historyCount, setHistoryCount] = useState(0);
 
-  // This is a placeholder for fetching real history count.
   // In a real app, this would come from a persistent store.
   useEffect(() => {
-    // For now, we'll keep it at 0 since mock data is removed.
+    // For now, we'll keep it at 0.
     setHistoryCount(0);
   }, []);
 

@@ -1,12 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import React, { useState, Suspense } from 'react';
 import { services } from '@/lib/services';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Copy, Search, Eye } from 'lucide-react';
+import { Copy, Search } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useApiKeys } from '@/context/api-keys-context';
 import { callVirusTotal } from '@/ai/flows/virustotal-flow';
@@ -18,13 +18,14 @@ import { callAlienVault } from '@/ai/flows/alienvault-flow';
 import { callIPQualityScore } from '@/ai/flows/ipqualityscore-flow';
 import { callCiscoTalos } from '@/ai/flows/ciscotalos-flow';
 import { callIBMForce } from '@/ai/flows/ibm-xforce-flow';
-import { VirusTotalResultViewer } from './virustotal-result-viewer';
-import { AbuseIPDBResultViewer } from './abuseipdb-result-viewer';
-import { GreyNoiseResultViewer } from './greynoise-result-viewer';
-import { AlienVaultResultViewer } from './alienvault-result-viewer';
-import { IPQualityScoreResultViewer } from './ipqualityscore-result-viewer';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '../ui/textarea';
+
+const VirusTotalResultViewer = React.lazy(() => import('./virustotal-result-viewer').then(module => ({ default: module.VirusTotalResultViewer })));
+const AbuseIPDBResultViewer = React.lazy(() => import('./abuseipdb-result-viewer').then(module => ({ default: module.AbuseIPDBResultViewer })));
+const GreyNoiseResultViewer = React.lazy(() => import('./greynoise-result-viewer').then(module => ({ default: module.GreyNoiseResultViewer })));
+const AlienVaultResultViewer = React.lazy(() => import('./alienvault-result-viewer').then(module => ({ default: module.AlienVaultResultViewer })));
+const IPQualityScoreResultViewer = React.lazy(() => import('./ipqualityscore-result-viewer').then(module => ({ default: module.IPQualityScoreResultViewer })));
 
 
 const serviceFlows: Record<string, (input: any) => Promise<any>> = {
@@ -37,6 +38,14 @@ const serviceFlows: Record<string, (input: any) => Promise<any>> = {
   ipqualityscore: callIPQualityScore,
   ciscotalos: callCiscoTalos,
   xforce: callIBMForce,
+};
+
+const resultViewers: Record<string, React.ComponentType<{ result: any }>> = {
+    virustotal: VirusTotalResultViewer,
+    abuseipdb: AbuseIPDBResultViewer,
+    greynoise: GreyNoiseResultViewer,
+    alienvault: AlienVaultResultViewer,
+    ipqualityscore: IPQualityScoreResultViewer,
 };
 
 export function ApiRequester() {
@@ -128,13 +137,14 @@ export function ApiRequester() {
     }
   };
   
-  const resultViewers: Record<string, React.ComponentType<{ result: any }>> = {
-      virustotal: VirusTotalResultViewer,
-      abuseipdb: AbuseIPDBResultViewer,
-      greynoise: GreyNoiseResultViewer,
-      alienvault: AlienVaultResultViewer,
-      ipqualityscore: IPQualityScoreResultViewer,
-  };
+  const loadingSkeleton = (
+    <div className="space-y-2 pt-2">
+      <Skeleton className="h-4 w-full" />
+      <Skeleton className="h-4 w-5/6" />
+      <Skeleton className="h-4 w-full" />
+      <Skeleton className="h-4 w-4/6" />
+    </div>
+  )
 
   return (
     <Tabs defaultValue={services[0].id} className="w-full">
@@ -186,16 +196,9 @@ export function ApiRequester() {
                     {loading[service.id] ? 'Fetching...' : 'Fetch'}
                     </Button>
                 </form>
-                {loading[service.id] && (
-                    <div className="space-y-2 pt-2">
-                    <Skeleton className="h-4 w-full" />
-                    <Skeleton className="h-4 w-5/6" />
-                    <Skeleton className="h-4 w-full" />
-                    <Skeleton className="h-4 w-4/6" />
-                    </div>
-                )}
+                {loading[service.id] && loadingSkeleton}
                 {results[service.id] && (
-                    <>
+                    <Suspense fallback={loadingSkeleton}>
                       {(() => {
                           const Viewer = resultViewers[service.id];
                           if (Viewer) {
@@ -209,7 +212,7 @@ export function ApiRequester() {
                               />
                           );
                       })()}
-                    </>
+                    </Suspense>
                 )}
                 </div>
             </CardContent>
